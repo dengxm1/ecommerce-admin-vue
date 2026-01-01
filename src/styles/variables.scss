@@ -1,0 +1,33 @@
+:root {
+    /* 主色调 */
+    --primary-color: #409EFF;
+    --success-color: #67C23A;
+    --warning-color: #E6A23C;
+    --danger-color: #F56C6C;
+    
+    /* 电商专用色 */
+    --ecommerce-primary: #FF6B35;
+    --ecommerce-secondary: #4ECDC4;
+    --ecommerce-accent: #FFD166;
+    
+    /* 中性色 */
+    --bg-color: #f5f7fa;
+    --sidebar-bg: #304156;
+    --header-bg: #ffffff;
+    --border-color: #e4e7ed;
+    --text-primary: #303133;
+    --text-regular: #606266;
+    --text-secondary: #909399;
+    --text-placeholder: #c0c4cc;
+    
+    /* 阴影 */
+    --shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
+    --shadow-medium: 0 2px 8px rgba(0, 0, 0, 0.1); 
+    --shadow-heavy: 0 4px 16px rgba(0, 0, 0, 0.15);
+    
+    /* 圆角 */
+    --radius-small: 4px;
+    --radius-medium: 6px;
+    --radius-large: 8px;
+    --radius-round: 20px;
+}
