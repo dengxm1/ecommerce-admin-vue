@@ -14,6 +14,19 @@ export default defineConfig({
     vue(),
     vueDevTools(),
     AutoImport({
+      imports: [
+        'vue',
+        'vue-router',
+        'pinia',
+        {
+          'element-plus': [
+            'ElMessage',
+            'ElMessageBox',
+            'ElNotification',
+            'ElLoading'
+          ]
+        }
+      ],
       resolvers: [ElementPlusResolver()],
     }),
     Components({

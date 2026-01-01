@@ -45,25 +45,14 @@ service.interceptors.response.use(
     if (res.code === 200) {
       return res
     } else {
-    //   // 业务错误处理
-    //   ElMessage({
-    //     message: res.message || '请求失败',
-    //     type: 'error',
-    //     duration: 5 * 1000
-    //   })
-      
-    //   // 特殊错误码处理
-    //   if (res.code === 401) {
-    //     // 未登录或token过期
-    //     // const userStore = useUserStore()
-    //     // userStore.logout()
-    //     router.push('/login')
-    //   } else if (res.code === 403) {
-    //     // 权限不足
-    //     ElMessage.error('权限不足，无法访问')
-    //   }
-      
-    //   return Promise.reject(new Error(res.message || '请求失败'))
+      // 业务逻辑错误，但不是HTTP错误
+      const message = res.message
+      ElMessage({
+        message,
+        type: 'error',
+        duration: 3000
+      })
+      return Promise.reject(new Error(message))
     }
   },
   error => {
@@ -80,7 +69,7 @@ service.interceptors.response.use(
       // 请求配置出错
       message = error.message
     }
-    
+    console.log('jfhsdjkfhksdjhfkjhds')
     ElMessage({
       message,
       type: 'error',

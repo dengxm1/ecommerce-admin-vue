@@ -5,16 +5,20 @@ import {type loginParams} from '@/types/apiType'
 import { ElMessage } from 'element-plus'
 
 
-export const userStore = defineStore('user',()=>{
+export const useUserStore = defineStore('user',()=>{
 
     const userInfo = ref()
     const menuList = ref()
 
     // 用户登录
     const login = async (data:loginParams) => {
-        const res = await loginApi(data)
-        localStorage.setItem("assess-token",res.token)
-        return res
+       try{
+            const res = await loginApi(data)
+            localStorage.setItem("assess-token",res.token)
+            return res
+       }catch(error){
+            throw error
+       }
     }    
       // 获取用户信息
     const fetchUserInfo = async () => {
