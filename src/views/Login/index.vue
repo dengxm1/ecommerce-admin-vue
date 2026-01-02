@@ -189,7 +189,7 @@ const handleLogin = async () => {
 
     // 登录成功提示
     ElMessage.success('登录成功')
-    
+    console.log('222222222222222222')
     // 跳转到首页
     router.push('/')
   } catch (error: any) {

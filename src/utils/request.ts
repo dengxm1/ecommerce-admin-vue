@@ -18,7 +18,7 @@ service.interceptors.request.use(
   config => {
     // 在发送请求之前做些什么
     
-    const token = localStorage.getItem("assess-token")
+    const token = localStorage.getItem("access-token")
     // 如果 token 存在，添加到请求头
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`
@@ -36,16 +36,10 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   response => {
-    // 对响应数据做点什么
-    
     const res = response.data
-    
-    // 根据你的后端返回格式进行调整
-    // 假设返回格式为 { code: 200, data: {}, message: 'success' }
     if (res.code === 200) {
       return res
     } else {
-      // 业务逻辑错误，但不是HTTP错误
       const message = res.message
       ElMessage({
         message,
@@ -57,19 +51,12 @@ service.interceptors.response.use(
   },
   error => {
     console.error('Response Error:', error)
-    
-    let message = '请求失败'
-    
-    if (error.response) {
-     
-    } else if (error.request) {
-      // 请求已发出但没有收到响应
-      message = '网络连接异常，请检查网络'
-    } else {
-      // 请求配置出错
-      message = error.message
+    const message = error.message|| error.response.data.message
+    const status = error.response.status
+    if (status === 401) {
+      localStorage.removeItem('access-token')
+      window.location.href = '/login'
     }
-    console.log('jfhsdjkfhksdjhfkjhds')
     ElMessage({
       message,
       type: 'error',

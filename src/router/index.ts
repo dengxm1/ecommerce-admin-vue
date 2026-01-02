@@ -29,7 +29,7 @@ const router = createRouter({
         keepAlive: false  // 不缓存
       }
     },
-      {
+    {
         path: '/404',
         name: 'NotFound',
         component: () => import("@/views/404/index.vue"),
