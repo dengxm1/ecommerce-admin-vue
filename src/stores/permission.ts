@@ -3,18 +3,19 @@ import { defineStore } from 'pinia'
 import {getUserMenu} from '@/api/auth'
 import router from '@/router/index'
 import { transformMenuToRoutes, addRoutesToHome,transformMenuToSidebar} from '@/utils/routeUtils'
-import {type BackendMenuItem} from '@/utils/routeUtils'
+import {type FrontendRoute} from '@/utils/routeUtils'
 
 export const usePermissionStore = defineStore("permission",() => {
     const routes = ref([])
     const loaded = ref(false) // 添加加载状态
-    const sidebarRoutes= ref([]); //侧边栏导航
+    const sidebarRoutes= ref<FrontendRoute[]>([]); //侧边栏导航
          // 获取用户权限菜单
     const generateRoutes = async () => {
           // 如果已经加载过，直接返回
         if (loaded.value) {
             return routes.value
         }
+        console.log('222222222222222')
         try {
             const res = await getUserMenu()
             routes.value = res.data
@@ -23,8 +24,9 @@ export const usePermissionStore = defineStore("permission",() => {
             // 添加到路由表中
             addRoutesToHome(router, frontendRoutes)
             // 生成侧边栏导航
-             const sidebarList = transformMenuToSidebar(res.data);
-             sidebarRoutes.value = sidebarList
+            const sidebarList = transformMenuToSidebar(res.data);
+            console.log('生成侧边栏导航===',sidebarList)
+            sidebarRoutes.value = sidebarList
             loaded.value = true // 标记为已加载
             return res
         } catch (error) {
@@ -41,6 +43,7 @@ export const usePermissionStore = defineStore("permission",() => {
     return {
         routes,
         sidebarRoutes,
+        loaded,
         clearRoutes,
         generateRoutes
     }

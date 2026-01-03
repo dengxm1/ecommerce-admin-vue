@@ -1,9 +1,7 @@
 <template>
-    <div>404</div>
+    <div>优惠券</div>
 </template>
 <script setup lang="ts">
 
 </script>
-<style scoped lang="scss">
-    
-</style>
+<style scoped lang="scss"></style>

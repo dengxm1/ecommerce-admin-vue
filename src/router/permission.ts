@@ -9,10 +9,8 @@ import { usePermissionStore } from '@/stores/permission'
 const whiteList = ['/login', '/404', '/500']
 
 export const setupPermissionGuard = (router: Router) => {
-  console.log('路由守卫调用，路由守卫调用')
   // 路由前置守卫
   router.beforeEach(async (to, from) => {
-
     // 获取用户Store和权限Store
     const userStore = useUserStore()
     const permissionStore = usePermissionStore()
@@ -25,10 +23,20 @@ export const setupPermissionGuard = (router: Router) => {
         return {path:'/'}
       }
       if(!userStore.userInfo){
-        await userStore.fetchUserInfo()
-        await permissionStore.generateRoutes()
+          await Promise.all([
+            userStore.fetchUserInfo(),
+            permissionStore.generateRoutes()
+        ])
+        // 修复非概览页刷新页面路由丢失问题
+        if (to.path !== '/' && to.path !== '/dashboard') {
+          return { 
+              path: to.path, 
+              replace: true,
+              query: to.query, // 保留查询参数
+              hash: to.hash    // 保留hash
+          }
+        }
       }
-      console.log('userStore.userInfo==',userStore.userInfo)
       return true
     }else{
       if (!whiteList.includes(to.path)) {

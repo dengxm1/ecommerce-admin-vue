@@ -8,25 +8,28 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      redirect: '/dashboard',
+      redirect: { name: 'dashboard' },
       component: Layout,
       children: [
         {
-          path: '/dashboard',
+          path: 'dashboard',
           name: 'dashboard',
-          component: () => import('@/views/Dashboard/index.vue')
+          component: () => import('@/views/dashboard/index.vue'),
+             meta: {
+              title: '概览',
+              hidden: false,
+            }
         }
       ]
     },
     {
       path:'/login',
       name:'login',
-      component:() => import("@/views/Login/index.vue"),
+      component:() => import("@/views/login/index.vue"),
       meta: {
         title: '登录',
         hidden: true,      // 不在侧边栏显示
         noAuth: true,     // 不需要权限验证
-        keepAlive: false  // 不缓存
       }
     },
     {

@@ -23,54 +23,19 @@
             router
             @select="handleSelect"
         >
-            <el-menu-item index="/dashboard">
-                <el-icon><Histogram /></el-icon>
-                <span>数据看板</span>
-            </el-menu-item>
-            
-            <el-sub-menu index="product">
-                <template #title>
-                    <el-icon><Goods /></el-icon>
-                    <span>商品管理</span>
-                </template>
-                <el-menu-item index="/product/list">商品列表</el-menu-item>
-                <el-menu-item index="/product/category">分类管理</el-menu-item>
-                <el-menu-item index="/product/brand">品牌管理</el-menu-item>
-            </el-sub-menu>
-            
-            <el-menu-item index="/order">
-                <el-icon><Tickets /></el-icon>
-                <span>订单管理</span>
-            </el-menu-item>
-            
-            <el-sub-menu index="marketing">
-                <template #title>
-                    <el-icon><Promotion /></el-icon>
-                    <span>营销管理</span>
-                </template>
-                <el-menu-item index="/marketing/coupon">优惠券</el-menu-item>
-                <el-menu-item index="/marketing/promotion">促销活动</el-menu-item>
-            </el-sub-menu>
-            
-            <el-menu-item index="/member">
-                <el-icon><User /></el-icon>
-                <span>会员管理</span>
-            </el-menu-item>
-            
-            <el-menu-item index="/warehouse">
-                <el-icon><OfficeBuilding /></el-icon>
-                <span>仓储管理</span>
-            </el-menu-item>
-            
-            <el-sub-menu index="system">
-                <template #title>
-                    <el-icon><Setting /></el-icon>
-                    <span>系统设置</span>
-                </template>
-                <el-menu-item index="/system/user">用户管理</el-menu-item>
-                <el-menu-item index="/system/role">角色管理</el-menu-item>
-                <el-menu-item index="/system/menu">菜单管理</el-menu-item>
-            </el-sub-menu>
+            <template v-for="list in sidebarList">
+                <el-sub-menu v-if="list.children"  :index="list.path">
+                    <template #title>
+                        <el-icon><Goods /></el-icon>
+                        <span>{{ list.meta?.title }}</span>
+                    </template>
+                    <el-menu-item v-for="child in list.children" :index="child.path">{{ child.meta?.title }}</el-menu-item>
+                </el-sub-menu>
+                 <el-menu-item v-else :index="list.path">
+                    <el-icon><Histogram /></el-icon>
+                    <span>{{ list.meta?.title }}</span>
+                </el-menu-item>
+            </template>
         </el-menu>
         
         <!-- 底部用户信息 -->
@@ -87,9 +52,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
-
+import {usePermissionStore} from '@/stores/permission'
+import type {FrontendRoute} from '@/utils/routeUtils'
 // Element Plus 图标
 import {
     Histogram,
@@ -104,6 +68,20 @@ import {
 const route = useRoute();
 const activeMenu = ref(route.path);
 const userAvatar = ref('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png');
+const permissionStore = usePermissionStore(); 
+const sidebarList = computed(() => {
+    const dashboard:FrontendRoute  = {
+        path: '/dashboard',
+        name: 'dashboard',
+        meta:{
+            title: '概览',
+            hidden: false,
+        },
+        component: () => import('@/views/dashboard/index.vue')
+        }
+        console.log('.permissionStore.sidebarRoutes==',permissionStore.sidebarRoutes)
+    return [dashboard,...permissionStore.sidebarRoutes]
+})
 
 const handleSelect = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)
