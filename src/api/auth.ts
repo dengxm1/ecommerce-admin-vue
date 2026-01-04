@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-import {type loginParams, type loginResponse} from '@/types/apiType'
+import type{ loginParams, loginResponse} from '@/types/apiType'
 
 // 登录
 export function login(data:loginParams) :Promise<loginResponse>{

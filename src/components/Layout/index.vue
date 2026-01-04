@@ -9,9 +9,7 @@
         </el-container>
     </el-container>
 </template>
-<script setup lang="ts">
-import Header from './header.vue';
-import Sidebar from './sidebar.vue';
+<script setup lang="ts"> 
 
 </script>
 <style scoped>
@@ -20,7 +18,7 @@ import Sidebar from './sidebar.vue';
         overflow: hidden;
         background: linear-gradient(135deg, #f5f7fa 0%, #e4e7ed 100%);
     }
-    .main-container {
+    /* .main-container {
         padding: 20px;
         background-color: #f5f7fa;
         position: relative;
@@ -38,15 +36,15 @@ import Sidebar from './sidebar.vue';
                 var(--ecommerce-accent) 100%);
             z-index: 1;
         }
-    }
+    } */
 
-    .main-content {
+    /* .main-content {
         background: white;
         border-radius: 8px;
         box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
         padding: 24px;
-        min-height: calc(100vh - 104px); /* 减去头部和内边距 */
+        min-height: calc(100vh - 104px); 
         position: relative;
         z-index: 0;
-    }
+    } */
 </style>

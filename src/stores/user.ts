@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import {getUserInfo,login as loginApi} from '@/api/auth'
-import {type loginParams} from '@/types/apiType'
+import type{ loginParams} from '@/types/apiType'
 import { ElMessage } from 'element-plus'
 
 

@@ -1,6 +1,7 @@
 <template>
     <el-header class="header-container">
-        <!-- 左侧：面包屑和页面标题 -->
+        <view class="header-wrapper">
+            <!-- 左侧：面包屑和页面标题 -->
         <div class="header-left">
             <div class="page-title">
                 <el-icon class="title-icon"><component :is="currentPage.icon" /></el-icon>
@@ -96,6 +97,8 @@
                 </template>
             </el-dropdown>
         </div>
+        </view>
+        <Tabs/>
     </el-header>
 </template>
 
@@ -162,6 +165,22 @@ const toggleTheme = () => {
 
 <style scoped lang="scss">
 .header-container {
+    height: auto !important; /* 改为自适应高度 */
+    padding: 0 !important; /* 移除内边距 */
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, 
+            var(--ecommerce-primary) 0%, 
+            var(--ecommerce-secondary) 50%, 
+            var(--ecommerce-accent) 100%);
+    }
+}
+.header-wrapper{
     height: 60px;
     background: linear-gradient(90deg, #ffffff 0%, #f8fafc 100%);
     border-bottom: 1px solid var(--border-color);
@@ -184,9 +203,8 @@ const toggleTheme = () => {
             var(--ecommerce-primary) 0%, 
             var(--ecommerce-secondary) 50%, 
             var(--ecommerce-accent) 100%);
-    }
+    }  
 }
-
 .header-left {
     display: flex;
     flex-direction: column;

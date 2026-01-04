@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { AxiosRequestConfig } from 'axios'
 import { ElMessage } from 'element-plus'
-import { type BaseResponse} from '@/types/apiType.ts'
+import type {BaseResponse} from '@/types/apiType'
 
 
 // 创建 axios 实例

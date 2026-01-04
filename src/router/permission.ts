@@ -4,6 +4,7 @@ import type { Router } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { usePermissionStore } from '@/stores/permission'
+import {useTabsStore} from '@/stores/tabs'
 
 // 白名单：不需要登录就可以访问的页面
 const whiteList = ['/login', '/404', '/500']
@@ -37,6 +38,14 @@ export const setupPermissionGuard = (router: Router) => {
           }
         }
       }
+      // 在验证通过后，添加标签页
+      const tabsStore = useTabsStore()
+      // 排除不需要添加标签的页面
+      if (!to.meta?.hidden && to.meta?.title) {
+         tabsStore.addTab(to)
+         tabsStore.setActiveTab(to.path);
+      }
+    
       return true
     }else{
       if (!whiteList.includes(to.path)) {

@@ -15,7 +15,6 @@ export const usePermissionStore = defineStore("permission",() => {
         if (loaded.value) {
             return routes.value
         }
-        console.log('222222222222222')
         try {
             const res = await getUserMenu()
             routes.value = res.data
@@ -25,7 +24,6 @@ export const usePermissionStore = defineStore("permission",() => {
             addRoutesToHome(router, frontendRoutes)
             // 生成侧边栏导航
             const sidebarList = transformMenuToSidebar(res.data);
-            console.log('生成侧边栏导航===',sidebarList)
             sidebarRoutes.value = sidebarList
             loaded.value = true // 标记为已加载
             return res
