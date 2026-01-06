@@ -3,129 +3,39 @@
     <!-- 搜索和筛选区域 -->
     <div class="search-section">
       <el-card class="search-card" shadow="never">
-        <el-form :model="searchForm" ref="searchFormRef" inline>
-          <!-- 关键词搜索 -->
-          <el-form-item label="关键词" prop="keyword">
-            <el-input
-              v-model="searchForm.keyword"
-              placeholder="用户名/昵称/邮箱"
-              clearable
-              @keyup.enter="handleSearch"
-              style="width: 200px"
-            >
-              <template #prefix>
-                <el-icon><Search /></el-icon>
-              </template>
-            </el-input>
-          </el-form-item>
-
-          <!-- 状态筛选 -->
-          <el-form-item label="状态" prop="status">
-            <el-select
-              v-model="searchForm.status"
-              placeholder="全部状态"
-              clearable
-              style="width: 120px"
-            >
-              <el-option label="启用" value="enabled" />
-              <el-option label="禁用" value="disabled" />
-            </el-select>
-          </el-form-item>
-
-          <!-- 角色筛选 -->
-          <el-form-item label="角色" prop="roleId">
-            <el-select
-              v-model="searchForm.roleId"
-              placeholder="全部角色"
-              clearable
-              style="width: 140px"
-            >
-              <el-option
-                v-for="role in roleOptions"
-                :key="role.id"
-                :label="role.name"
-                :value="role.id"
-              />
-            </el-select>
-          </el-form-item>
-
-          <!-- 日期范围 -->
-          <el-form-item label="创建时间" prop="dateRange">
-            <el-date-picker
-              v-model="searchForm.dateRange"
-              type="daterange"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              value-format="YYYY-MM-DD"
-              style="width: 240px"
-            />
-          </el-form-item>
-
-          <!-- 搜索按钮 -->
-          <el-form-item>
-            <el-button 
-              type="primary" 
-              :icon="Search" 
-              @click="handleSearch"
-            >
-              搜索
-            </el-button>
-            <el-button 
-              :icon="Refresh" 
-              @click="handleReset"
-            >
-              重置
-            </el-button>
-            <el-button 
-             type="primary"
-              link
-              @click="toggleAdvancedSearch"
-              class="advanced-btn"
-            >
-              {{ showAdvanced ? '收起' : '高级筛选' }}
-              <el-icon :class="{ 'rotate-icon': showAdvanced }">
-                <ArrowDown />
-              </el-icon>
-            </el-button>
-          </el-form-item>
-        </el-form>
-
+        <ProForm ref="searchFormRef" :modelForm="searchForm" :formItemList="searchFormList" inline>
+            <template #footer>
+                 <el-button 
+                    type="primary" 
+                    :icon="Search" 
+                    @click="handleSearch"
+                  >
+                    搜索
+                  </el-button>
+                  <el-button 
+                    :icon="Refresh" 
+                    @click="handleReset"
+                  >
+                    重置
+                  </el-button>
+                  <el-button 
+                  type="primary"
+                    link
+                    @click="toggleAdvancedSearch"
+                    class="advanced-btn"
+                  >
+                    {{ showAdvanced ? '收起' : '高级筛选' }}
+                    <el-icon :class="{ 'rotate-icon': showAdvanced }">
+                      <ArrowDown />
+                    </el-icon>
+                  </el-button>
+            </template>
+        </ProForm>
         <!-- 高级筛选（可折叠） -->
         <el-collapse-transition>
           <div v-show="showAdvanced" class="advanced-search">
             <el-divider />
-            <el-form :model="searchForm" ref="advancedFormRef" inline>
-              <el-form-item label="邮箱" prop="email">
-                <el-input
-                  v-model="searchForm.email"
-                  placeholder="邮箱地址"
-                  clearable
-                  style="width: 200px"
-                />
-              </el-form-item>
-
-              <el-form-item label="手机号" prop="phone">
-                <el-input
-                  v-model="searchForm.phone"
-                  placeholder="手机号码"
-                  clearable
-                  style="width: 200px"
-                />
-              </el-form-item>
-
-              <el-form-item label="最后登录" prop="lastLogin">
-                <el-date-picker
-                  v-model="searchForm.lastLogin"
-                  type="daterange"
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期"
-                  value-format="YYYY-MM-DD"
-                  style="width: 240px"
-                />
-              </el-form-item>
-            </el-form>
+            <ProForm ref="advancedFormRef" :modelForm="searchForm" :formItemList="advancedFormList" inline></ProForm>
           </div>
         </el-collapse-transition>
       </el-card>
@@ -421,6 +331,87 @@ const searchForm = reactive({
   lastLogin: []
 })
 
+const searchFormList = ref([
+  {
+    type:'input',
+    label:'关键词',
+    prop:'keyword',
+    placeholder:'用户名/昵称/邮箱',
+    clearable: true,
+    style:'width: 200px'
+  },
+  {
+    type:'select',
+    label:'状态',
+    prop:'status',
+    placeholder:'全部状态',
+    clearable: true,
+    style:'width: 120px',
+    options:[
+      {
+        id: 'enabled',
+        label:'启用'
+      },
+       {
+        id: 'disabled',
+        label:'禁用'
+      }
+    ]
+  },
+  {
+    type:'select',
+    label:'角色',
+    prop:'roleId',
+    placeholder:'全部角色',
+    clearable: true,
+    style:'width: 140px',
+    selectProps:{
+      value:'id',
+      label:'name'
+    },
+    options:[
+      { id: 1, name: '超级管理员' },
+      { id: 2, name: '系统管理员' },
+      { id: 3, name: '商品专员' },
+      { id: 4, name: '订单客服' },
+      { id: 5, name: '财务人员' }
+    ]
+  },
+    {
+    type:'dateRange',
+    label:'创建时间',
+    prop:'dateRange',
+    style:'width: 240px',
+  }
+])
+
+const advancedFormList = ref([
+  {
+    type:'input',
+    label:'邮箱',
+    prop:'email',
+    placeholder:'邮箱地址',
+    clearable: true,
+    style:'width: 200px'
+  },
+   {
+    type:'input',
+    label:'手机号',
+    prop:'phone',
+    placeholder:'手机号码',
+    clearable: true,
+    style:'width: 200px'
+  },
+     {
+    type:'dateRange',
+    label:'最后登录',
+    prop:'lastLogin',
+    clearable: true,
+    style:'width: 240px'
+  },
+])
+
+
 const searchFormRef = ref()
 const advancedFormRef = ref()
 const showAdvanced = ref(false)
@@ -560,61 +551,6 @@ const roleOptions = ref([
   { id: 5, name: '财务人员' }
 ])
 
-// 模拟用户数据
-const mockUserData = [
-  {
-    id: 1,
-    username: 'admin',
-    nickname: '超级管理员',
-    email: 'admin@example.com',
-    phone: '13800138000',
-    avatar: '',
-    roles: [{ id: 1, name: '超级管理员' }],
-    isEnabled: true,
-    isInitialPassword: false,
-    createdAt: '2024-01-01 10:00:00',
-    lastLoginTime: '2024-03-20 15:30:00'
-  },
-  {
-    id: 2,
-    username: 'product_manager',
-    nickname: '商品经理',
-    email: 'product@example.com',
-    phone: '13800138001',
-    avatar: '',
-    roles: [{ id: 3, name: '商品专员' }],
-    isEnabled: true,
-    isInitialPassword: true,
-    createdAt: '2024-02-15 14:20:00',
-    lastLoginTime: '2024-03-19 09:15:00'
-  },
-  {
-    id: 3,
-    username: 'order_service',
-    nickname: '订单客服',
-    email: 'service@example.com',
-    phone: '',
-    avatar: '',
-    roles: [{ id: 4, name: '订单客服' }, { id: 5, name: '财务人员' }],
-    isEnabled: true,
-    isInitialPassword: false,
-    createdAt: '2024-03-01 09:00:00',
-    lastLoginTime: null
-  },
-  {
-    id: 4,
-    username: 'disabled_user',
-    nickname: '禁用用户',
-    email: 'disabled@example.com',
-    phone: '13800138002',
-    avatar: '',
-    roles: [],
-    isEnabled: false,
-    isInitialPassword: true,
-    createdAt: '2024-03-10 16:45:00',
-    lastLoginTime: null
-  }
-]
 
 // 计算属性
 const selectedCount = computed(() => selectedRows.value.length)
@@ -639,32 +575,6 @@ const handleReset = () => {
 const fetchUserList = async () => {
   loading.value = true
   try {
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 500))
-    
-    // 模拟筛选逻辑
-    let filteredData = [...mockUserData]
-    
-    if (searchForm.keyword) {
-      const keyword = searchForm.keyword.toLowerCase()
-      filteredData = filteredData.filter(user => 
-        user.username.toLowerCase().includes(keyword) ||
-        user.nickname?.toLowerCase().includes(keyword) ||
-        user.email?.toLowerCase().includes(keyword)
-      )
-    }
-    
-    if (searchForm.status) {
-      filteredData = filteredData.filter(user => 
-        searchForm.status === 'enabled' ? user.isEnabled : !user.isEnabled
-      )
-    }
-    
-    // 模拟分页
-    const start = (pagination.current - 1) * pagination.size
-    const end = start + pagination.size
-    userList.value = filteredData.slice(start, end)
-    pagination.total = filteredData.length
     
   } catch (error) {
     ElMessage.error('获取用户列表失败')
@@ -749,8 +659,7 @@ const handleBatchDelete = async () => {
       }
     )
     
-    // 模拟API调用
-    // await batchDeleteUsers(selectedRows.value.map(row => row.id))
+    // API调用
     
     ElMessage.success('删除成功')
     selectedRows.value = []
@@ -764,8 +673,7 @@ const handleBatchDelete = async () => {
 const handleExport = async () => {
   loading.value = true
   try {
-    // 模拟导出
-    // await exportUserData(searchForm)
+    // todo:导出
     ElMessage.success('导出任务已开始，请稍后查看下载列表')
   } catch (error) {
     ElMessage.error('导出失败')
@@ -793,8 +701,7 @@ const toggleUserStatus = async (row: any) => {
       }
     )
     
-    // 模拟API调用
-    // await toggleUserStatus(row.id, newStatus)
+    // API调用
     
     ElMessage.success(`${action}成功`)
     row.isEnabled = newStatus
@@ -836,8 +743,7 @@ const deleteSingleUser = async (row: any) => {
       }
     )
     
-    // 模拟API调用
-    // await deleteUser(row.id)
+    // API调用
     
     ElMessage.success('删除成功')
     fetchUserList()
@@ -1061,7 +967,6 @@ onMounted(() => {
   
   .password-status {
     display: flex;
-    // justify-content: center;
   }
   
   .time-info {
@@ -1085,10 +990,6 @@ onMounted(() => {
     .delete-item {
       color: var(--danger-color);
     }
-  }
-  .status-content{
-    display: flex;
-    align-items: center;
   }
   
   /* 分页 */
