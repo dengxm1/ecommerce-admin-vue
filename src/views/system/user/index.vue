@@ -89,6 +89,7 @@
           :columns="columns"
           showSelection
           showAction
+          stripe
           >
             <template #userInfo="{row}">
                 <div class="user-info-cell">
@@ -254,12 +255,11 @@
     </div>
 
     <!-- 新建/编辑用户对话框 -->
-    <!-- <UserFormDialog
-      v-model="dialog.visible"
-      :type="dialog.type"
-      :user-data="dialog.userData"
+    <UserFormDialog
+      v-model="userDialog.visible"
+      :title="userDialog.title"
       @success="handleDialogSuccess"
-    /> -->
+    />
 
     <!-- 分配角色对话框 -->
     <!-- <AssignRoleDialog
@@ -283,7 +283,7 @@ import { ElMessage, ElMessageBox, ElTable } from 'element-plus'
 import dayjs from 'dayjs'
 
 // 组件
-// import UserFormDialog from './components/UserFormDialog.vue'
+import UserFormDialog from './components/UserFormDialog.vue'
 // import AssignRoleDialog from './components/AssignRoleDialog.vue'
 // import ResetPasswordDialog from './components/ResetPasswordDialog.vue'
 
@@ -526,8 +526,9 @@ const userList = ref<any[]>([])
 const selectedRows = ref<any[]>([])
 
 // 对话框状态
-const dialog = reactive({
+const userDialog = reactive({
   visible: false,
+  title:"新增用户",
   type: 'create' as 'create' | 'edit',
   userData: null as any
 })
@@ -606,15 +607,15 @@ const handleCurrentChange = (current: number) => {
 }
 
 const handleCreate = () => {
-  dialog.type = 'create'
-  dialog.userData = null
-  dialog.visible = true
+  userDialog.type = 'create'
+  userDialog.userData = null
+  userDialog.visible = true
 }
 
 const handleEdit = (row: any) => {
-  dialog.type = 'edit'
-  dialog.userData = { ...row }
-  dialog.visible = true
+  userDialog.type = 'edit'
+  userDialog.userData = { ...row }
+  userDialog.visible = true
 }
 
 const handleAssignRole = (row: any) => {
@@ -754,7 +755,7 @@ const deleteSingleUser = async (row: any) => {
 }
 
 const handleDialogSuccess = () => {
-  dialog.visible = false
+  userDialog.visible = false
   fetchUserList()
 }
 
