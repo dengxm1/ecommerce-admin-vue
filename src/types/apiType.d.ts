@@ -12,4 +12,14 @@ export interface loginResponse extends BaseResponse{
   token: string,
 }
 
+export interface userInfo{
+    username: string,
+    password: string,
+    nickname?: string,
+    email?: string,
+    phone?: string,
+    avatar?: string,
+    isEnabled?: string
+}
+
 
