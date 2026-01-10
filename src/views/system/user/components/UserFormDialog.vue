@@ -1,6 +1,7 @@
 <template>
     <div>
         <ProDialog 
+            ref="dialogFormRef"
             v-model="dialogVisible" 
             :title="title" 
             :modelForm="modelForm" 
@@ -18,9 +19,10 @@
     </div>
 </template>
 <script setup lang="ts">
-    import {type FormRules} from 'element-plus'
+    import {type FormRules,ElMessage} from 'element-plus'
     import type {formItem} from '@/components/ProForm/ProForm.vue'
-
+    import {addUserApi} from '@/api/user'
+    const dialogFormRef = ref()
     interface RuleForm {
         username: string,
         password: string,
@@ -108,8 +110,20 @@
 
     })
 
-    const submit = () =>{
-        console.log('提交提交==',modelForm)
+    const submit = async () => {
+       try{
+         console.log('提交提交==',modelForm)
+         const res = await addUserApi(modelForm);
+         dialogVisible.value = false;
+         dialogFormRef.value?.resetFields()
+          ElMessage({
+            message: res.message || '新增用户成功',
+            type: 'success',
+            duration: 3000
+        })
+       }catch(err){
+        console.log('err====',err)
+       }
     }
 
     const cancel = () => {

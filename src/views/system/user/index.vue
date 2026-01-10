@@ -68,6 +68,7 @@
           </div>
           <div class="actions-right">
              <el-button 
+                v-permission="'system:user:add'"
                 type="primary" 
                 :icon="Plus" 
                 @click="handleCreate"

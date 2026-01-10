@@ -16,10 +16,18 @@ export function getUserInfo() {
     method: 'get'
   })
 }
-// 获取用户权限菜单
+// 获取用户菜单项
 export function getUserMenu() {
   return request({
     url: '/system/auth/getUserMenu',
+    method: 'get'
+  })
+}
+
+// 获取用户权限列表
+export function getPermissionsListApi() {
+  return request({
+    url: '/system/auth/getUserPermissions',
     method: 'get'
   })
 }

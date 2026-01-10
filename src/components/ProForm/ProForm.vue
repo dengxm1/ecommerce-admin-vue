@@ -6,7 +6,7 @@
             ref="proFormRef" 
             :inline="inline"
             :label-position="labelPosition"
-            :label-width="labelWidth || '80px'"
+            :label-width="labelWidth"
             >
             <view v-for="item in formItemList"  :style="getItemStyle(item.itemColStyle)">
                 <el-form-item :label="item.label" :prop="item.prop">

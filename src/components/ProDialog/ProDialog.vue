@@ -10,6 +10,7 @@
       ref="proFormRef"
       :modelForm="modelForm" 
       :formItemList="formItemList" 
+      labelWidth="auto"
       :rules="rules"
       />
     <slot name="append"></slot>
@@ -56,7 +57,7 @@ const dialogVisible = computed({
 const submit = async () => {
   if(!proFormRef.value) return
    try{
-    await proFormRef.value.validate();
+    await validate()
     emit('submit')
    }catch(error){
       console.log('error submit!', error)
@@ -66,14 +67,32 @@ const submit = async () => {
 const cancel = async () =>{
     if(!proFormRef.value) return
    try{
-    await proFormRef.value.resetFields();
+    await resetFields();
     dialogVisible.value = false;
     emit('cancel')
    }catch(error){
       console.log('error submit!', error)
    }
 }
+    const validate = (callback?:(isValid: boolean,invalidFields?: any) => Promise<void> | void) => {
+        if(!proFormRef.value) return
+        return proFormRef.value.validate(callback);
+    }
 
+    const resetFields = (props?: string | string[]) => {
+          if(!proFormRef.value) return
+        return proFormRef.value.resetFields(props)
+    }
+
+    const clearValidate = (props?: string | string[]) => {
+        if (!proFormRef.value) return
+        return proFormRef.value.clearValidate(props)
+    }
+    defineExpose({
+      validate,
+      resetFields,
+      clearValidate
+    })
 </script>
 <style scoped lang="scss">
     .title-container{

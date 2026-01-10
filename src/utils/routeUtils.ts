@@ -42,6 +42,7 @@ type sMapType = {
 export function transformMenuToRoutes(menuList: BackendMenuItem[]): FrontendRoute[]{
     const rootMap: rMapType = {};
     menuList.forEach(item => {
+        if(item.type == 3) return;
         const route = createRouteFromMenuItem(item)
         rootMap[item.id] = route;
     })
@@ -95,7 +96,6 @@ export function transformMenuToSidebar(menuList: BackendMenuItem[]): FrontendRou
         const bItem = menuList.find(item => item.path === b.path)
         return (aItem?.sort || 0) - (bItem?.sort || 0)
     })
-
     const rootRoutes = createSidebar(sidebarList);
     return rootRoutes
 }
