@@ -55,13 +55,7 @@ const dialogVisible = computed({
 })
 
 const submit = async () => {
-  if(!proFormRef.value) return
-   try{
-    await validate()
     emit('submit')
-   }catch(error){
-      console.log('error submit!', error)
-   }
 }
 
 const cancel = async () =>{

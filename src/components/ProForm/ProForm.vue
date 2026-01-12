@@ -17,6 +17,7 @@
                         :placeholder="item.placeholder|| `请输入${item.label}`"
                         :clearable="item.clearable"
                         :show-password="item.type == 'password'"
+                        :disabled="item.disabled"
                     >
                        <template v-if="item.append" #append>
                             {{ item.append }}
@@ -30,8 +31,9 @@
                         :placeholder="item.placeholder||`请选择${item.label}`"
                         :clearable="item.clearable"
                         :style="item.style"
+                        :disabled="item.disabled"
                         />
-                    <el-switch v-if="item.type == 'switch'" v-model="modelForm[item.prop]" />
+                    <el-switch v-if="item.type == 'switch'" v-model="modelForm[item.prop]" :disabled="item.disabled"/>
                     <el-date-picker
                         v-if="item.type == 'dateRange'"
                         v-model="modelForm[item.prop]"
@@ -41,6 +43,7 @@
                         end-placeholder="结束日期"
                         value-format="YYYY-MM-DD"
                         :style="item.style"
+                        :disabled="item.disabled"
                     />
                 </el-form-item>
             </view>
@@ -75,7 +78,8 @@
         clearable?: boolean,
         style?: string | object,
         multiple?: boolean,
-        itemColStyle?: string | CSSProperties
+        itemColStyle?: string | CSSProperties,
+        disabled?: boolean
     }
     const props = defineProps<{
         labelPosition?: 'left' | 'right' | 'top',

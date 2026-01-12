@@ -3,34 +3,34 @@
     <!-- 搜索和筛选区域 -->
     <div class="search-section">
       <el-card class="search-card" shadow="never">
-        <ProForm ref="searchFormRef" :modelForm="searchForm" :formItemList="searchFormList" inline>
-            <template #footer>
-                 <el-button 
-                    type="primary" 
-                    :icon="Search" 
-                    @click="handleSearch"
-                  >
-                    搜索
-                  </el-button>
-                  <el-button 
-                    :icon="Refresh" 
-                    @click="handleReset"
-                  >
-                    重置
-                  </el-button>
-                  <el-button 
-                  type="primary"
-                    link
-                    @click="toggleAdvancedSearch"
-                    class="advanced-btn"
-                  >
-                    {{ showAdvanced ? '收起' : '高级筛选' }}
-                    <el-icon :class="{ 'rotate-icon': showAdvanced }">
-                      <ArrowDown />
-                    </el-icon>
-                  </el-button>
-            </template>
-        </ProForm>
+      <ProForm ref="searchFormRef" :modelForm="searchForm" :formItemList="searchFormList" inline>
+        <template #footer>
+              <el-button 
+                type="primary" 
+                :icon="Search" 
+                @click="handleSearch"
+              >
+                搜索
+              </el-button>
+              <el-button 
+                :icon="Refresh" 
+                @click="handleReset"
+              >
+                重置
+              </el-button>
+              <el-button 
+              type="primary"
+                link
+                @click="toggleAdvancedSearch"
+                class="advanced-btn"
+              >
+                {{ showAdvanced ? '收起' : '高级筛选' }}
+                <el-icon :class="{ 'rotate-icon': showAdvanced }">
+                  <ArrowDown />
+                </el-icon>
+              </el-button>
+        </template>
+      </ProForm>
         <!-- 高级筛选（可折叠） -->
         <el-collapse-transition>
           <div v-show="showAdvanced" class="advanced-search">
@@ -42,56 +42,57 @@
     </div>
 
     <!-- 用户表格区域 -->
-    <div class="table-section">
-      <el-card shadow="never">
-        <!-- 表格操作栏 -->
-        <div class="table-actions">
-          <div class="actions-left">
-            <el-button 
-              :icon="Delete" 
-              :disabled="selectedRows.length === 0"
-              @click="handleBatchDelete"
-              class="batch-btn"
-            >
-              批量删除
-            </el-button>
-            <el-button 
-              :icon="Download" 
-              @click="handleExport"
-              class="export-btn"
-            >
-              导出数据
-            </el-button>
-            <span class="selected-count" v-if="selectedRows.length > 0">
-              已选择 {{ selectedRows.length }} 项
-            </span>
-          </div>
-          <div class="actions-right">
-             <el-button 
-                v-permission="'system:user:add'"
-                type="primary" 
-                :icon="Plus" 
-                @click="handleCreate"
-                class="create-btn"
-                >
-                新建用户
-              </el-button>
-            <el-button 
-              :icon="RefreshRight" 
-              circle 
-              @click="refreshTable"
-              title="刷新"
-            />
-          </div>
-        </div>
-        
-        <ProTable 
+      <ProTable 
           :data="tableData" 
           :columns="columns"
+          v-model:current-page="pagination.current"
+          v-model:page-size="pagination.size"
+          :total="pagination.total"
           showSelection
           showAction
           stripe
           >
+            <template #table-header>
+                <div class="table-actions">
+                <div class="actions-left">
+                  <el-button 
+                    :icon="Delete" 
+                    :disabled="selectedRows.length === 0"
+                    @click="handleBatchDelete"
+                    class="batch-btn"
+                  >
+                    批量删除
+                  </el-button>
+                  <el-button 
+                    :icon="Download" 
+                    @click="handleExport"
+                    class="export-btn"
+                  >
+                    导出数据
+                  </el-button>
+                  <span class="selected-count" v-if="selectedRows.length > 0">
+                    已选择 {{ selectedRows.length }} 项
+                  </span>
+                </div>
+                <div class="actions-right">
+                  <el-button 
+                      v-permission="'system:user:add'"
+                      type="primary" 
+                      :icon="Plus" 
+                      @click="handleCreate"
+                      class="create-btn"
+                      >
+                      新建用户
+                    </el-button>
+                  <el-button 
+                    :icon="RefreshRight" 
+                    circle 
+                    @click="refreshTable"
+                    title="刷新"
+                  />
+                </div>
+                </div>
+            </template>
             <template #userInfo="{row}">
                 <div class="user-info-cell">
                   <el-avatar 
@@ -123,12 +124,12 @@
                <div class="role-tags">
                 <el-tag
                   v-for="role in row.roles"
-                  :key="role.id"
+                  :key="role.roleId"
                   size="small"
-                  :type="getRoleTagType(role.name)"
+                  :type="getRoleTagType(role.roleName)"
                   class="role-tag"
                 >
-                  {{ role.name }}
+                  {{ role.roleName }}
                 </el-tag>
                 <span v-if="!row.roles || row.roles.length === 0" class="no-role">
                   未分配角色
@@ -162,6 +163,15 @@
             </template>
             <template #action="{row}">
                  <div class="action-buttons">
+                  <el-tooltip content="查看详情" placement="top">
+                    <el-button 
+                      type="info" 
+                      :icon="View" 
+                      size="small"
+                      circle
+                      @click="handlerView(row)"
+                    />
+                  </el-tooltip>
                 <el-tooltip content="编辑" placement="top">
                   <el-button 
                     type="primary" 
@@ -178,15 +188,6 @@
                     size="small"
                     circle
                     @click="handleAssignRole(row)"
-                  />
-                </el-tooltip>
-                <el-tooltip content="重置密码" placement="top">
-                  <el-button 
-                    type="warning" 
-                    :icon="Lock" 
-                    size="small"
-                    circle
-                    @click="handleResetPassword(row)"
                   />
                 </el-tooltip>
                 <el-dropdown 
@@ -211,18 +212,11 @@
                         {{ row.isEnabled ? '禁用账户' : '启用账户' }}
                       </el-dropdown-item>
                       <el-dropdown-item 
-                        command="forcePasswordChange"
-                        :disabled="row.isInitialPassword"
+                        command="resetPassword"
+                        :divided="row.isEnabled"
                       >
-                        <el-icon><Key /></el-icon>
-                        强制修改密码
-                      </el-dropdown-item>
-                      <el-dropdown-item 
-                        command="viewLogs"
-                        divided
-                      >
-                        <el-icon><Document /></el-icon>
-                        查看操作日志
+                        <el-icon><Lock /></el-icon>
+                        <span>重置密码</span>
                       </el-dropdown-item>
                       <el-dropdown-item 
                         command="delete" 
@@ -239,26 +233,12 @@
             </template>
         </ProTable>
 
-        <!-- 分页 -->
-        <div class="pagination-section">
-          <el-pagination
-            v-model:current-page="pagination.current"
-            v-model:page-size="pagination.size"
-            :page-sizes="[10, 20, 50, 100]"
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="pagination.total"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            background
-          />
-        </div>
-      </el-card>
-    </div>
-
     <!-- 新建/编辑用户对话框 -->
     <UserFormDialog
       v-model="userDialog.visible"
       :title="userDialog.title"
+      :type="userDialog.type"
+      :data="userDialog.userData"
       @success="handleDialogSuccess"
     />
 
@@ -282,20 +262,13 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox, ElTable } from 'element-plus'
 import dayjs from 'dayjs'
+import {getUserListApi} from '@/api/user'
 
 // 组件
 import UserFormDialog from './components/UserFormDialog.vue'
 // import AssignRoleDialog from './components/AssignRoleDialog.vue'
 // import ResetPasswordDialog from './components/ResetPasswordDialog.vue'
 
-// API（模拟）
-// import { 
-//   getUserList, 
-//   deleteUser, 
-//   batchDeleteUsers,
-//   toggleUserStatus,
-//   exportUserData
-// } from '@/api/system/user'
 
 // 图标
 import {
@@ -314,7 +287,7 @@ import {
   UserFilled,
   Lock,
   More,
-  Key,
+  View,
   Document
 } from '@element-plus/icons-vue'
 import {type TableColumn} from '@/components/ProTable/ProTable.vue'
@@ -416,60 +389,7 @@ const advancedFormList = ref([
 const searchFormRef = ref()
 const advancedFormRef = ref()
 const showAdvanced = ref(false)
-const tableData = ref<any[]>([
-    {
-    id: 1,
-    username: 'admin',
-    nickname: '超级管理员',
-    email: 'admin@example.com',
-    phone: '13800138000',
-    avatar: '',
-    roles: [{ id: 1, name: '超级管理员' }],
-    isEnabled: true,
-    isInitialPassword: false,
-    createdAt: '2024-01-01 10:00:00',
-    lastLoginTime: '2024-03-20 15:30:00'
-  },
-  {
-    id: 2,
-    username: 'product_manager',
-    nickname: '商品经理',
-    email: 'product@example.com',
-    phone: '13800138001',
-    avatar: '',
-    roles: [{ id: 3, name: '商品专员' }],
-    isEnabled: true,
-    isInitialPassword: true,
-    createdAt: '2024-02-15 14:20:00',
-    lastLoginTime: '2024-03-19 09:15:00'
-  },
-  {
-    id: 3,
-    username: 'order_service',
-    nickname: '订单客服',
-    email: 'service@example.com',
-    phone: '',
-    avatar: '',
-    roles: [{ id: 4, name: '订单客服' }, { id: 5, name: '财务人员' }],
-    isEnabled: true,
-    isInitialPassword: false,
-    createdAt: '2024-03-01 09:00:00',
-    lastLoginTime: null
-  },
-  {
-    id: 4,
-    username: 'disabled_user',
-    nickname: '禁用用户',
-    email: 'disabled@example.com',
-    phone: '13800138002',
-    avatar: '',
-    roles: [],
-    isEnabled: false,
-    isInitialPassword: true,
-    createdAt: '2024-03-10 16:45:00',
-    lastLoginTime: null
-  }
-])
+const tableData = ref<any[]>([])
 
 const columns = ref<TableColumn[]>([
     {
@@ -517,7 +437,7 @@ const columns = ref<TableColumn[]>([
 // 分页
 const pagination = reactive({
   current: 1,
-  size: 20,
+  size: 10,
   total: 0
 })
 
@@ -530,7 +450,7 @@ const selectedRows = ref<any[]>([])
 const userDialog = reactive({
   visible: false,
   title:"新增用户",
-  type: 'create' as 'create' | 'edit',
+  type: 'create' as 'create' | 'edit' | 'view',
   userData: null as any
 })
 
@@ -574,10 +494,19 @@ const handleReset = () => {
   fetchUserList()
 }
 
+// 获取用户列表
 const fetchUserList = async () => {
   loading.value = true
   try {
-    
+    let params = {
+      pageNum: pagination.current,
+      pageSize: pagination.size
+    }
+  const res =  await getUserListApi(params);
+   if(res.data){
+      tableData.value = res.data.list;
+      pagination.total = res.data.total
+   }
   } catch (error) {
     ElMessage.error('获取用户列表失败')
     console.error(error)
@@ -619,6 +548,12 @@ const handleEdit = (row: any) => {
   userDialog.visible = true
 }
 
+const handlerView = (row:any) => {
+    userDialog.type = 'view'
+    userDialog.userData = { ...row }
+    userDialog.visible = true
+}
+
 const handleAssignRole = (row: any) => {
   roleDialog.userData = { ...row }
   roleDialog.visible = true
@@ -629,16 +564,14 @@ const handleResetPassword = (row: any) => {
   resetDialog.visible = true
 }
 
+
 const handleMoreCommand = (command: string, row: any) => {
   switch (command) {
     case 'toggleStatus':
       toggleUserStatus(row)
       break
-    case 'forcePasswordChange':
-      forcePasswordChange(row)
-      break
-    case 'viewLogs':
-      viewUserLogs(row)
+    case 'resetPassword':
+      handleResetPassword(row)
       break
     case 'delete':
       deleteSingleUser(row)
@@ -713,25 +646,6 @@ const toggleUserStatus = async (row: any) => {
   }
 }
 
-const forcePasswordChange = (row: any) => {
-  ElMessageBox.confirm(
-    `强制用户 "${row.username}" 下次登录时必须修改密码？`,
-    '强制修改密码',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消'
-    }
-  ).then(() => {
-    ElMessage.success('设置成功，用户下次登录时必须修改密码')
-  }).catch(() => {
-    // 取消
-  })
-}
-
-const viewUserLogs = (row: any) => {
-  ElMessage.info(`查看用户 ${row.username} 的操作日志`)
-}
-
 const deleteSingleUser = async (row: any) => {
   try {
     await ElMessageBox.confirm(
@@ -776,15 +690,15 @@ const formatTime = (time: string, format: string = 'YYYY-MM-DD HH:mm') => {
   return dayjs(time).format(format)
 }
 
-const getRoleTagType = (roleName: string): string => {
-  const typeMap: Record<string, string> = {
-    '超级管理员': 'danger',
+const getRoleTagType = (roleName: string): 'success' | 'danger' | 'primary' | 'warning' | 'info' => {
+  const typeMap: Record<string, 'success' | 'danger' | 'primary' | 'warning' | 'info'> = {
+    '租户超级管理员': 'danger',
     '系统管理员': 'warning',
     '商品专员': 'success',
     '订单客服': 'info',
     '财务人员': 'primary'
   }
-  return typeMap[roleName] || ''
+  return typeMap[roleName] || 'primary'
 }
 
 // 初始化
@@ -832,27 +746,6 @@ onMounted(() => {
 
 /* 表格区域 */
 .table-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  
-  :deep(.el-card) {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-large);
-    background: white;
-    
-    .el-card__body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 16px 20px;
-    }
-  }
-  
   .table-actions {
     display: flex;
     justify-content: space-between;
@@ -992,15 +885,6 @@ onMounted(() => {
     .delete-item {
       color: var(--danger-color);
     }
-  }
-  
-  /* 分页 */
-  .pagination-section {
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    justify-content: flex-end;
   }
 }
 

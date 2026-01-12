@@ -14,7 +14,7 @@ export interface loginResponse extends BaseResponse{
 
 export interface userInfo{
     username: string,
-    password: string,
+    password?: string,
     nickname?: string,
     email?: string,
     phone?: string,
@@ -22,4 +22,16 @@ export interface userInfo{
     isEnabled?: string
 }
 
+export interface getUserListParams{
+  pageNum: number | string,
+  pageSize: number | string,
+  username?: string,
+  nickname?: string,
+  phone?: string,
+  email?: string,
+  isEnabled?: number | string,
+  roleId?: number | string,
+  sortField?: string,
+  sortOrder?: string
+}
 
