@@ -24,133 +24,63 @@
     </div>
 
     <!-- 角色表格区域 -->
-    <div class="table-section">
-      <el-card shadow="never">
-        <!-- 表格操作栏 -->
-        <div class="table-actions">
-          <div class="actions-left">
-            <span class="role-count" v-if="roleStatistics.total > 0">
-              共 {{ roleStatistics.total }} 个角色
-              <template v-if="roleStatistics.custom > 0">
-                ({{ roleStatistics.custom }} 个自定义角色)
-              </template>
-            </span>
-          </div>
-          <div class="actions-right">
-            <el-button 
-              type="primary" 
-              :icon="Plus" 
-              @click="handleCreate"
-              class="create-btn"
-            >
-              新建角色
-            </el-button>
-            <el-button 
-              :icon="RefreshRight" 
-              circle 
-              @click="refreshTable"
-              title="刷新"
-            />
-          </div>
-        </div>
-        
-        <ProTable 
+       <ProTable 
           :data="tableData" 
           :columns="columns"
           showAction
           stripe
+          v-model:current-page="pagination.current"
+          v-model:page-size="pagination.size"
+          :total="pagination.total"
           >
-            
-            <!-- 角色描述 -->
-            <template #description="{row}">
-                <div class="description-cell">
-                  <div class="description-text">
-                    {{ row.description || '暂无描述' }}
-                  </div>
-                  <div class="permission-count" v-if="row.permissionCount > 0">
-                    <el-tag size="small" type="info">
-                      {{ row.permissionCount }} 项权限
-                    </el-tag>
-                  </div>
+            <template #table-header>
+                <div class="table-actions">
+                    <div class="actions-left">
+                      <span class="role-count" v-if="roleStatistics.total > 0">
+                        共 {{ roleStatistics.total }} 个角色
+                        <template v-if="roleStatistics.custom > 0">
+                          ({{ roleStatistics.custom }} 个自定义角色)
+                        </template>
+                      </span>
+                    </div>
+                    <div class="actions-right">
+                      <el-button 
+                        type="primary" 
+                        :icon="Plus" 
+                        @click="handleCreate"
+                        class="create-btn"
+                      >
+                        新建角色
+                      </el-button>
+                      <el-button 
+                        :icon="RefreshRight" 
+                        circle 
+                        @click="refreshTable"
+                        title="刷新"
+                      />
+                    </div>
                 </div>
             </template>
             
             <!-- 关联用户 -->
             <template #users="{row}">
-               <div class="user-tags">
-                <div class="user-info" v-if="row.userCount > 0">
-                  <el-popover
-                    placement="top-start"
-                    title="关联用户"
-                    :width="200"
-                    trigger="hover"
-                    v-if="row.users && row.users.length > 0"
-                  >
-                    <template #reference>
-                      <div class="user-avatars">
-                        <el-avatar 
-                          v-for="user in row.users.slice(0, 2)"
-                          :key="user.id"
-                          :size="28"
-                          :src="user.avatar"
-                          class="user-avatar"
-                        >
-                          {{ user.nickname?.charAt(0) || user.username?.charAt(0) }}
-                        </el-avatar>
-                        <el-tag 
-                          v-if="row.userCount > 2"
-                          size="small"
-                          type="info"
-                          class="more-tag"
-                        >
-                          +{{ row.userCount - 2 }}
-                        </el-tag>
-                      </div>
-                    </template>
-                    <div class="user-list">
-                      <div 
-                        v-for="user in row.users" 
-                        :key="user.id"
-                        class="user-item"
-                      >
-                        <el-avatar :size="24" :src="user.avatar">
-                          {{ user.nickname?.charAt(0) || user.username?.charAt(0) }}
-                        </el-avatar>
-                        <span class="user-name">{{ user.nickname || user.username }}</span>
-                      </div>
-                    </div>
-                  </el-popover>
-                  <div class="user-count">
-                    <span class="count-text">{{ row.userCount }} 人</span>
-                  </div>
-                </div>
+               <el-button 
+                  v-if="row.userCount > 0"
+                  type="primary" 
+                  size="small"
+                  link
+                >
+                  查看
+                </el-button>
                 <span v-else class="no-users">
                   暂无用户
                 </span>
-              </div>
-            </template>
-            
-            <!-- 角色状态 -->
-            <template #status="{row}">
-                <el-switch
-                  v-model="row.status"
-                  :active-value="1"
-                  :inactive-value="0"
-                  :loading="row.statusLoading"
-                  @change="(val) => toggleRoleStatus(row, val)"
-                  :disabled="row.code === 'TENANT_SUPER_ADMIN'"
-                />
             </template>
             
             <!-- 创建时间 -->
             <template #createdAt="{row}">
-                <div class="time-info">
-                  <div class="create-time">
-                    {{ formatTime(row.createdAt, 'MM-DD') }}
-                  </div>
-                  <div class="update-time" v-if="row.updatedAt">
-                    {{ formatTime(row.updatedAt, 'MM-DD') }}
-                  </div>
+                <div>
+                    {{ formatTime(row.createdAt) }}
               </div>
             </template>
             
@@ -195,20 +125,6 @@
                     />
                     <template #dropdown>
                       <el-dropdown-menu>
-                        <el-dropdown-item 
-                          command="copy"
-                          :icon="CopyDocument"
-                        >
-                          复制角色
-                        </el-dropdown-item>
-                        
-                        <el-dropdown-item 
-                          command="viewUsers"
-                          :disabled="row.userCount === 0"
-                          :icon="UserFilled"
-                        >
-                          查看用户
-                        </el-dropdown-item>
                         
                         <el-dropdown-item 
                           command="permissionDetail"
@@ -236,29 +152,14 @@
             </template>
         </ProTable>
 
-        <!-- 分页 -->
-        <div class="pagination-section">
-          <el-pagination
-            v-model:current-page="pagination.current"
-            v-model:page-size="pagination.size"
-            :page-sizes="[10, 20, 50]"
-            layout="total, sizes, prev, pager, next"
-            :total="pagination.total"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            background
-          />
-        </div>
-      </el-card>
-    </div>
 
     <!-- 新建/编辑角色对话框 -->
-    <!-- <RoleFormDialog
+    <RoleFormDialog
       v-model="dialog.visible"
       :type="dialog.type"
-      :role-data="dialog.roleData"
+      :data="dialog.roleData"
       @success="handleDialogSuccess"
-    /> -->
+    />
 
     <!-- 权限分配对话框 -->
     <!-- <PermissionDialog
@@ -273,6 +174,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
+import {getRoleListApi,deleteRoleApi} from '@/api/role'
+import RoleFormDialog from './components/RoleFormDialog.vue'
 
 // 图标
 import {
@@ -351,181 +254,56 @@ const searchFormList = ref([
 const searchFormRef = ref()
 
 // 表格数据
-const tableData = ref<any[]>([
-  {
-    id: 1,
-    name: '租户超级管理员',
-    code: 'TENANT_SUPER_ADMIN',
-    description: '拥有系统所有权限，最高权限角色',
-    status: 1,
-    isSystem: true,
-    permissionCount: 42,
-    userCount: 1,
-    users: [
-      { id: 1, username: 'admin', nickname: '超级管理员', avatar: '' }
-    ],
-    createdAt: '2024-01-01 10:00:00',
-    updatedAt: '2024-03-20 15:30:00',
-    statusLoading: false
-  },
-  {
-    id: 2,
-    name: '系统管理员',
-    code: 'SYSTEM_ADMIN',
-    description: '管理系统设置、用户和角色',
-    status: 1,
-    isSystem: true,
-    permissionCount: 18,
-    userCount: 2,
-    users: [
-      { id: 2, username: 'sysadmin', nickname: '系统管理员', avatar: '' },
-      { id: 3, username: 'manager', nickname: '经理', avatar: '' }
-    ],
-    createdAt: '2024-01-05 14:20:00',
-    updatedAt: null,
-    statusLoading: false
-  },
-  {
-    id: 3,
-    name: '商品管理员',
-    code: 'PRODUCT_MANAGER',
-    description: '负责商品上下架、分类管理',
-    status: 1,
-    isSystem: false,
-    permissionCount: 12,
-    userCount: 3,
-    users: [
-      { id: 4, username: 'product1', nickname: '商品专员A', avatar: '' },
-      { id: 5, username: 'product2', nickname: '商品专员B', avatar: '' }
-    ],
-    createdAt: '2024-02-15 09:00:00',
-    updatedAt: '2024-03-10 11:20:00',
-    statusLoading: false
-  },
-  {
-    id: 4,
-    name: '订单客服',
-    code: 'ORDER_SERVICE',
-    description: '处理订单、售后和客户咨询',
-    status: 1,
-    isSystem: false,
-    permissionCount: 10,
-    userCount: 5,
-    users: [
-      { id: 6, username: 'service1', nickname: '客服A', avatar: '' },
-      { id: 7, username: 'service2', nickname: '客服B', avatar: '' }
-    ],
-    createdAt: '2024-02-20 13:30:00',
-    updatedAt: null,
-    statusLoading: false
-  },
-  {
-    id: 5,
-    name: '财务人员',
-    code: 'FINANCE_STAFF',
-    description: '财务对账、收支管理',
-    status: 1,
-    isSystem: false,
-    permissionCount: 8,
-    userCount: 2,
-    users: [
-      { id: 8, username: 'finance1', nickname: '财务A', avatar: '' }
-    ],
-    createdAt: '2024-03-01 15:45:00',
-    updatedAt: null,
-    statusLoading: false
-  },
-  {
-    id: 6,
-    name: '仓库管理员',
-    code: 'WAREHOUSE_KEEPER',
-    description: '库存管理、出入库操作',
-    status: 0,
-    isSystem: false,
-    permissionCount: 9,
-    userCount: 2,
-    users: [
-      { id: 9, username: 'warehouse1', nickname: '仓管员', avatar: '' }
-    ],
-    createdAt: '2024-03-05 10:20:00',
-    updatedAt: '2024-03-12 14:30:00',
-    statusLoading: false
-  },
-  {
-    id: 7,
-    name: '营销专员',
-    code: 'MARKETING_SPECIALIST',
-    description: '活动策划、优惠券管理',
-    status: 1,
-    isSystem: false,
-    permissionCount: 7,
-    userCount: 3,
-    users: [
-      { id: 10, username: 'marketing1', nickname: '营销A', avatar: '' },
-      { id: 11, username: 'marketing2', nickname: '营销B', avatar: '' }
-    ],
-    createdAt: '2024-03-08 11:00:00',
-    updatedAt: null,
-    statusLoading: false
-  },
-  {
-    id: 8,
-    name: '数据分析师',
-    code: 'DATA_ANALYST',
-    description: '查看分析报表和数据统计',
-    status: 1,
-    isSystem: false,
-    permissionCount: 6,
-    userCount: 1,
-    users: [],
-    createdAt: '2024-03-10 16:45:00',
-    updatedAt: null,
-    statusLoading: false
-  }
-])
+const tableData = ref<any[]>([])
 
 const columns = ref<TableColumn[]>([
   {
     prop: 'name',
     label: '角色名称',
-    // slot: 'name',
-    minWidth: 180
   },
    {
     prop: 'code',
     label: '角色编码',
-    // slot: 'code',
-    minWidth: 180
+    width: 250
   },
   {
     prop: 'description',
     label: '描述',
-    // slot: 'description',
-    minWidth: 200
+    width: 250
   },
   {
     prop: 'users',
     label: '用户',
-    // slot: 'users',
-    width: 140
+    slot:'users',
+    width: 120
   },
   {
     prop: 'permissionCount',
     label: '权限',
+    sortable: true,
     width: 80,
-    sortable: true
+    columnFormatter:(row) => {
+      return row.buttonPermissionCount + row.menuPermissionCount
+    }
   },
   {
-    prop: 'status',
-    label: '状态',
-    slot: 'status',
-    width: 80
+      prop: 'status',
+      label:'状态',
+      tags: true,
+      width: 80,
+      tagFormatter:(row,type) => {
+        if(type == 'text'){
+            return row.status ==1 ? '启用' : '禁用'
+        }else{
+          return row.status ==1 ? 'success' : 'danger'
+        }
+        
+      }
   },
   {
     prop: 'createdAt',
-    label: '时间',
+    label: '创建时间',
     slot: 'createdAt',
-    width: 120
   }
 ])
 
@@ -533,7 +311,8 @@ const columns = ref<TableColumn[]>([
 const pagination = reactive({
   current: 1,
   size: 10,
-  total: 8
+  total: 0,
+  totalPage: 0
 })
 
 // 统计信息
@@ -579,9 +358,21 @@ const handleReset = () => {
   fetchRoleList()
 }
 
+// 获取角色列表
 const fetchRoleList = async () => {
-  // 模拟API调用
-  updateStatistics()
+  try{
+    let params = {
+      pageNum: pagination.current,
+      pageSize: pagination.size
+    }
+    const res =  await getRoleListApi(params);
+    tableData.value = res.data.list || [];
+    pagination.total = res.data.total;
+    pagination.totalPage = res.data.totalPages;
+  }catch(error){
+    ElMessage.error('获取用户列表失败')
+    console.error(error)
+  }
 }
 
 const handleSizeChange = (size: number) => {
@@ -657,12 +448,6 @@ const toggleRoleStatus = async (row: any, newStatus: any) => {
 
 const handleMoreCommand = (command: string, row: any) => {
   switch (command) {
-    case 'copy':
-      handleCopyRole(row)
-      break
-    case 'viewUsers':
-      viewRoleUsers(row)
-      break
     case 'permissionDetail':
       viewPermissionDetail(row)
       break
@@ -670,34 +455,6 @@ const handleMoreCommand = (command: string, row: any) => {
       deleteSingleRole(row)
       break
   }
-}
-
-const handleCopyRole = (row: any) => {
-  ElMessageBox.prompt('请输入新角色名称', '复制角色', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    inputValue: `${row.name} - 复制`,
-    inputValidator: (value) => {
-      if (!value || value.trim() === '') {
-        return '角色名称不能为空'
-      }
-      if (value.length > 20) {
-        return '角色名称不能超过20个字符'
-      }
-      return true
-    }
-  }).then(({ value }) => {
-    // 调用API复制角色
-    ElMessage.success(`角色 "${row.name}" 已复制为 "${value}"`)
-    fetchRoleList()
-  }).catch(() => {
-    // 取消
-  })
-}
-
-const viewRoleUsers = (row: any) => {
-  ElMessage.info(`查看角色 "${row.name}" 的用户列表`)
-  // 实际项目中可以跳转到用户管理页面，并自动筛选该角色的用户
 }
 
 const viewPermissionDetail = (row: any) => {
@@ -735,8 +492,7 @@ const deleteSingleRole = async (row: any) => {
   
   try {
     // API调用
-    // await deleteRole(row.id)
-    
+    await deleteRoleApi(row.id)
     ElMessage.success('删除成功')
     fetchRoleList()
     
@@ -751,7 +507,6 @@ const refreshTable = () => {
 }
 
 const handleDialogSuccess = () => {
-  dialog.visible = false
   fetchRoleList()
 }
 
@@ -760,7 +515,7 @@ const handlePermissionSuccess = () => {
   fetchRoleList()
 }
 
-const formatTime = (time: string, format: string = 'MM-DD HH:mm') => {
+const formatTime = (time: string, format: string = 'YYYY-MM-DD HH:mm') => {
   if (!time) return '-'
   return dayjs(time).format(format)
 }
@@ -823,26 +578,6 @@ onMounted(() => {
 
 /* 表格区域 */
 .table-section {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  
-  :deep(.el-card) {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-large);
-    background: white;
-    
-    .el-card__body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 16px 20px;
-    }
-  }
   
   .table-actions {
     display: flex;
@@ -953,75 +688,9 @@ onMounted(() => {
     }
   }
   
-  .user-tags {
-    .user-info {
-      .user-avatars {
-        display: flex;
-        align-items: center;
-        gap: -8px;
-        margin-bottom: 4px;
-        
-        .user-avatar {
-          border: 2px solid white;
-          box-shadow: var(--shadow-light);
-          transition: transform 0.2s;
-          
-          &:hover {
-            transform: translateY(-2px);
-          }
-        }
-        
-        .more-tag {
-          margin-left: 4px;
-          font-size: 11px;
-        }
-      }
-      
-      .user-count {
-        font-size: 12px;
-        color: var(--text-secondary);
-        
-        .count-text {
-          display: inline-block;
-          padding: 2px 6px;
-          background: #f5f7fa;
-          border-radius: 4px;
-        }
-      }
-    }
-    
-    .no-users {
-      font-size: 12px;
+  .no-users {
       color: var(--text-placeholder);
       font-style: italic;
-    }
-    
-    .user-list {
-      .user-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 4px 0;
-        
-        .user-name {
-          font-size: 13px;
-          color: var(--text-regular);
-        }
-      }
-    }
-  }
-  
-  .time-info {
-    font-size: 12px;
-    
-    .create-time {
-      color: var(--text-regular);
-      margin-bottom: 2px;
-    }
-    
-    .update-time {
-      color: var(--text-secondary);
-    }
   }
   
   .action-buttons {

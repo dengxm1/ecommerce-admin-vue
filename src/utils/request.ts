@@ -51,7 +51,7 @@ service.interceptors.response.use(
   },
   error => {
     console.error('Response Error:', error)
-    const message = error.message|| error.response.data.message
+    const message = error.response.data.message || error.message
     const status = error.response.status
     if (status === 401) {
       localStorage.removeItem('access-token')

@@ -19,7 +19,7 @@ export interface userInfo{
     email?: string,
     phone?: string,
     avatar?: string,
-    isEnabled?: string
+    isEnabled?: number
 }
 
 export interface getUserListParams{
@@ -35,3 +35,27 @@ export interface getUserListParams{
   sortOrder?: string
 }
 
+export interface updateUserParams{
+    nickname?: string,
+    email?: string,
+    phone?: string,
+    avatar?: string,
+    isEnabled?: number
+}
+
+export interface getRoleListParams{
+  pageNum: number | string,
+  pageSize: number | string,
+  name?: string,
+  code?: string,
+  sortField?: string,
+  sortOrder?: string
+}
+
+export interface roleInfo{
+  id?: number | null,
+  name: string,
+  code: string,
+  description?: string,
+  status?: number
+}

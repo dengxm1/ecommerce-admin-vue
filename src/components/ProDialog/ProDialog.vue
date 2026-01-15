@@ -82,10 +82,17 @@ const cancel = async () =>{
         if (!proFormRef.value) return
         return proFormRef.value.clearValidate(props)
     }
+
+      const validateField = (props?: string | string[]) => {
+        if (!proFormRef.value) return;
+        return proFormRef.value.validateField(props);
+    };
+
     defineExpose({
       validate,
       resetFields,
-      clearValidate
+      clearValidate,
+      validateField
     })
 </script>
 <style scoped lang="scss">

@@ -18,6 +18,7 @@
                         :clearable="item.clearable"
                         :show-password="item.type == 'password'"
                         :disabled="item.disabled"
+                        :maxlength="item.maxlength"
                     >
                        <template v-if="item.append" #append>
                             {{ item.append }}
@@ -45,6 +46,9 @@
                         :style="item.style"
                         :disabled="item.disabled"
                     />
+                <el-radio-group v-if="item.type == 'radio'" v-model="modelForm[item.prop]" :disabled="item.disabled">
+                    <el-radio v-for="list in item.options" :value="list.value">{{ list.label }}</el-radio>
+                </el-radio-group>
                 </el-form-item>
             </view>
             <view v-if="slots.footer">
@@ -79,7 +83,9 @@
         style?: string | object,
         multiple?: boolean,
         itemColStyle?: string | CSSProperties,
-        disabled?: boolean
+        disabled?: boolean,
+        maxlength?: number | string,
+        minlength?: number | string
     }
     const props = defineProps<{
         labelPosition?: 'left' | 'right' | 'top',
@@ -127,10 +133,15 @@
         if (!proFormRef.value) return
         return proFormRef.value.clearValidate(props)
     }
+    const validateField = (props?: string | string[]) => {
+        if (!proFormRef.value) return;
+        return proFormRef.value.validateField(props);
+    };
     defineExpose({
         validate,
         resetFields,
-        clearValidate
+        clearValidate,
+        validateField
     })
 </script>
 <style scoped lang="scss"></style>

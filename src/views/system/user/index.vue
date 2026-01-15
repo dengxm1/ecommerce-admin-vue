@@ -136,21 +136,6 @@
                 </span>
               </div>
             </template>
-            <template #passwordStatus="{row}">
-                <div class="password-status">
-                <el-tooltip 
-                  :content="row.isInitialPassword ? '使用初始密码，建议修改' : '密码已修改'"
-                  placement="top"
-                >
-                  <el-tag 
-                    :type="row.isInitialPassword ? 'warning' : 'info'"
-                    size="small"
-                  >
-                    {{ row.isInitialPassword ? '初始密码' : '已修改' }}
-                  </el-tag>
-                </el-tooltip>
-              </div>
-            </template>
             <template #createdAt="{row}">
                 <div class="time-info">
                   <div class="create-time">
@@ -231,7 +216,7 @@
                 </el-dropdown>
               </div>
             </template>
-        </ProTable>
+      </ProTable>
 
     <!-- 新建/编辑用户对话框 -->
     <UserFormDialog
@@ -243,11 +228,11 @@
     />
 
     <!-- 分配角色对话框 -->
-    <!-- <AssignRoleDialog
+    <AssignRoleDialog
       v-model="roleDialog.visible"
       :user-data="roleDialog.userData"
       @success="handleRoleAssignSuccess"
-    /> -->
+    />
 
     <!-- 重置密码对话框 -->
     <!-- <ResetPasswordDialog
@@ -262,11 +247,11 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox, ElTable } from 'element-plus'
 import dayjs from 'dayjs'
-import {getUserListApi} from '@/api/user'
+import {getUserListApi,updateUserStatusApi,deleteUserApi} from '@/api/user'
 
 // 组件
 import UserFormDialog from './components/UserFormDialog.vue'
-// import AssignRoleDialog from './components/AssignRoleDialog.vue'
+import AssignRoleDialog from './components/AssignRoleDialog.vue'
 // import ResetPasswordDialog from './components/ResetPasswordDialog.vue'
 
 
@@ -412,11 +397,11 @@ const columns = ref<TableColumn[]>([
         prop: 'status',
         label:'状态',
         tags: true,
-        formatter:(row,type) => {
+        tagFormatter:(row,type) => {
           if(type == 'text'){
-             return row.isEnabled ? '启用' : '禁用'
+             return row.isEnabled == 1 ? '启用' : '禁用'
           }else{
-            return row.isEnabled ? 'success' : 'danger'
+            return row.isEnabled==1? 'success' : 'danger'
           }
          
         }
@@ -424,7 +409,15 @@ const columns = ref<TableColumn[]>([
     {
         prop: 'passwordStatus',
         label:'密码状态',
-        slot:'passwordStatus',
+        tags: true,
+        tagFormatter:(row,type) => {
+          if(type == 'text'){
+             return row.passwordStatus ==1 ? '初始密码' : '已修改'
+          }else{
+            return row.passwordStatus ==1 ? 'warning' : 'info'
+          }
+         
+        }
     },
     {
         prop: 'createdAt',
@@ -538,18 +531,21 @@ const handleCurrentChange = (current: number) => {
 
 const handleCreate = () => {
   userDialog.type = 'create'
+  userDialog.title ="新增用户"
   userDialog.userData = null
   userDialog.visible = true
 }
 
 const handleEdit = (row: any) => {
   userDialog.type = 'edit'
+  userDialog.title ="编辑用户"
   userDialog.userData = { ...row }
   userDialog.visible = true
 }
 
 const handlerView = (row:any) => {
     userDialog.type = 'view'
+    userDialog.title ="查看用户"
     userDialog.userData = { ...row }
     userDialog.visible = true
 }
@@ -594,8 +590,6 @@ const handleBatchDelete = async () => {
       }
     )
     
-    // API调用
-    
     ElMessage.success('删除成功')
     selectedRows.value = []
     fetchUserList()
@@ -635,8 +629,10 @@ const toggleUserStatus = async (row: any) => {
         type: newStatus ? 'success' : 'warning'
       }
     )
-    
-    // API调用
+      await updateUserStatusApi({
+      id: row.id,
+      isEnabled: Number(newStatus)
+    })
     
     ElMessage.success(`${action}成功`)
     row.isEnabled = newStatus
@@ -659,8 +655,8 @@ const deleteSingleUser = async (row: any) => {
       }
     )
     
-    // API调用
-    
+    await deleteUserApi([row.id])
+
     ElMessage.success('删除成功')
     fetchUserList()
     
@@ -670,12 +666,10 @@ const deleteSingleUser = async (row: any) => {
 }
 
 const handleDialogSuccess = () => {
-  userDialog.visible = false
   fetchUserList()
 }
 
 const handleRoleAssignSuccess = () => {
-  roleDialog.visible = false
   fetchUserList()
 }
 

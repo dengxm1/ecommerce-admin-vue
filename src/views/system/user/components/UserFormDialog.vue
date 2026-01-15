@@ -21,9 +21,10 @@
 <script setup lang="ts">
     import {type FormRules,ElMessage, ElStep} from 'element-plus'
     import type {formItem} from '@/components/ProForm/ProForm.vue'
-    import {addUserApi} from '@/api/user'
+    import {addUserApi,updateUserListApi} from '@/api/user'
     const dialogFormRef = ref()
     interface RuleForm {
+        id?: number | string,
         username: string,
         password?: string,
         confirmPassword?: string,
@@ -31,7 +32,7 @@
         email?: string,
         phone?: string,
         avatar?: string,
-        enabled?: boolean
+        isEnabled?: number
     }
     const props = defineProps<{
         modelValue: boolean,
@@ -60,6 +61,7 @@
         set: (value) => emit('update:modelValue', value) 
     })
     const modelForm = reactive<RuleForm>({
+        id:"",
         username: "",
         password: "",
         confirmPassword:"",
@@ -67,7 +69,7 @@
         email: "",
         phone: "",
         avatar: "",
-        enabled: false
+        isEnabled: 1
     })
     const baseFormItemList = reactive<formItem[]>([
         {
@@ -96,9 +98,7 @@
             label: "邮箱",
             prop: "email",
             type: "input",
-            clearable:true,
-            append: ".com",
-            slotContent: ".com"  
+            clearable:true
         },
         {
             label: "手机号",
@@ -113,10 +113,55 @@
         // },
          {
             label: "是否禁用",
-            prop: "enabled",
-            type: "switch",
+            prop: "isEnabled",
+            type: "radio",
+            options: [
+            {
+                value: 1,
+                label:'启用'
+            },
+            {
+                value: 0,
+                label:'禁用'
+            }
+        ]
         },
     ])
+
+
+    // const validateConfirmPassword = (rule: any, value: string, callback: Function) => {
+    //     console.log('dfjskhfksdhfkdshf',value)
+    // if (value !== modelForm.password) {
+    //     return callback(new Error('两次输入的密码不一致'));
+    // }
+    // }
+
+    const validateConfirmPassword = (rule: any, value: string, callback: Function) => {
+    console.log('=== validateConfirmPassword 被调用 ===');
+    console.log('确认密码:', value, '密码:', modelForm.password);
+    
+    // 1. 必填验证
+    if (!value) {
+        callback(new Error('请输入确认密码'));
+        return;
+    }
+    
+    // 2. 长度验证
+    if (value.length < 6 || value.length > 16) {
+        callback(new Error('密码长度必须在6-16个字符以内'));
+        return;
+    }
+    
+    // 3. 一致性验证
+    if (value !== modelForm.password) {
+        callback(new Error('两次输入的密码不一致'));
+        return;
+    }
+    
+    // 所有验证通过
+    callback();
+};
+
 
     const baseRules = reactive<FormRules<RuleForm>>({
         username:[
@@ -125,19 +170,12 @@
         ],
         password:[
             {  required: true,message: '请输入密码'},
-            { min: 3, max: 8, message: '密码长度必须在6-16个字符以内'}
+            { min: 6, max: 16, message: '密码长度必须在6-16个字符以内'}
         ],
         confirmPassword:[
-            {required: true,message: '请输入确认密码'},
-            { 
-                validator(rule, value, callback) {
-                  if(value != modelForm.password){
-                    callback(new Error('两次输入的密码不一致'))
-                  }else{
-                    callback()
-                  }
-                },
-            },
+            { required: true, message: '请输入确认密码', trigger: 'blur' },
+            { validator: validateConfirmPassword, trigger: ['blur', 'change'] }
+           
         ],
         email: [
             { type: 'email', message: '请输入正确的邮箱地址'}
@@ -164,6 +202,14 @@
                         disabled: true
                     }
                 }
+                if(props.type == 'edit'){
+                    if(item.prop == 'username'){
+                        return {
+                            ...item,
+                            disabled: true
+                        }
+                    }
+                }
                 return item;
             });
         }
@@ -172,6 +218,7 @@
 
      // 根据类型动态返回表单规则
     const currentRules = computed(() => {
+            console.log('计算 currentRules, type:', props.type);
         // 如果是查看模式，不需要任何验证
         if (props.type === 'view') {
             return {} as FormRules<RuleForm>;
@@ -182,6 +229,7 @@
             delete rules.password;
             delete rules.confirmPassword;
         }
+        
         return rules as FormRules<RuleForm>;
     })
 
@@ -204,41 +252,26 @@
                 if (props.data) {
                     console.log(`${props.type}模式：填充数据`, props.data);
                     fillFormWithData(props.data);
-                    
-                    // 对于编辑模式，密码字段不需要显示数据
-                    // if (props.type === 'edit') {
-                    //     modelForm.password = '';
-                    //     modelForm.confirmPassword = '';
-                    // }
                 }
                 break;
-            // case 'view':
-            //     if (props.data) {
-            //         fillFormWithData(props.data);
-            //         delete modelForm.password;
-            //         delete modelForm.confirmPassword;
-            //     }
-            //     break;
         }
     }
 
     // 填充表单数据
     const fillFormWithData = (data: Record<string, any>) => {
-        Object.keys(modelForm).forEach(key => {
-            const typedKey = key as keyof RuleForm;  
-            if (typedKey in data && data[typedKey] !== undefined) {
-                if (typedKey === 'enabled') {
-                    modelForm[typedKey] = Boolean(data[typedKey]);
-                } else {
-                    modelForm[typedKey] = data[typedKey];
-                }
-            }
-        });
+            modelForm.id = data.id;
+            modelForm.username = data.username;
+            modelForm.nickname = data.nickname
+            modelForm.email = data.email
+            modelForm.phone = data.phone
+            modelForm.avatar = data.avatar
+            modelForm.isEnabled = data.isEnabled
     }
 
     
     // 重置表单
     const resetForm = () => {
+            modelForm.id = "";
             modelForm.username = "";
             modelForm.password = ""
             modelForm.confirmPassword = ""
@@ -246,24 +279,14 @@
             modelForm.email = ""
             modelForm.phone = ""
             modelForm.avatar = ""
-            modelForm.enabled = false
-    //    dialogFormRef.value?.resetFields?.();
+            modelForm.isEnabled = 1
+       dialogFormRef.value?.resetFields?.();
+    //     setTimeout(() => {
+    //         dialogFormRef.value?.clearValidate?.();
+    // }, 50);
     }
 
     const submit = async () => {
-    //    try{
-    //      delete modelForm['confirmPassword'];
-    //      const res = await addUserApi(modelForm);
-    //      dialogVisible.value = false;
-    //      dialogFormRef.value?.resetFields()
-    //       ElMessage({
-    //         message: res.message || '新增用户成功',
-    //         type: 'success',
-    //         duration: 3000
-    //     })
-    //    }catch(err){
-    //     console.log('err====',err)
-    //    }
        try {
             // 验证表单
             await dialogFormRef.value?.validate?.();
@@ -287,10 +310,10 @@
                 });
                 emit('success');
             } else if (props.type === 'edit') {
-                // const res = await editUserApi(submitData);
+                const res = await updateUserListApi(submitData.id!,submitData);
                 console.log('编辑用户:', submitData);
                 ElMessage({
-                    message: '编辑用户成功',
+                    message: res.message || '编辑用户成功',
                     type: 'success',
                     duration: 3000
                 });
@@ -318,6 +341,7 @@
     },{
         immediate: true
     })
+
 
 </script>
 <style scoped lang="scss">

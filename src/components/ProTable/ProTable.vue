@@ -27,15 +27,16 @@
                     :sortOrders="column.sortOrders"
                     :class-name="column.className"
                     :label-class-name="column.labelClassName"
+                    :formatter="column.columnFormatter"
                     >
-                    <template #default="scope" v-if="column.tags && column.formatter">
+                    <template #default="scope" v-if="column.tags && column.tagFormatter">
                         <el-tag 
-                        :type="column.formatter(scope.row,'style')" 
+                        :type="column.tagFormatter(scope.row,'style')" 
                         size="small"
                         effect="light"
                         class="status-tag"
                     >
-                        {{column.formatter(scope.row,'text') }}
+                        {{column.tagFormatter(scope.row,'text') }}
                     </el-tag>
                     </template>
                     <template #default="scope" v-else-if="column.slot">
@@ -47,6 +48,7 @@
                     v-if="showAction" 
                     label="操作" 
                     :width="actionWidth" 
+                    :min-width="actionMinWidth"
                     :fixed="actionFixed">
                     <template #default="scope">
                         <slot name="action" v-bind="scope" />
@@ -81,7 +83,8 @@
         sortOrders?: Array<'ascending' | 'descending' | null>,
         slot?: string,  // 自定义内容插槽名
         headerSlot?: string,  // 自定义表头插槽名
-        formatter?: (row: any, type: 'text'| 'style') => any,
+        tagFormatter?: (row: any, type: 'text'| 'style') => any,
+        columnFormatter?:(row: any, column: any, cellValue: any, index: number) => any,
         className?: string,
         labelClassName?: string,
         tags?: boolean
@@ -96,6 +99,7 @@
         showAction?: boolean,  //是否显示操作栏
         actionWidth?: string | number,  //操作栏的宽度
         actionFixed?: boolean | 'left' | 'right',  //操作栏的固定位置
+        actionMinWidth?: string | number,
         showPagination?: boolean, //是否显示分页
         currentPage?: number,   //当前页
         pageSize?: number, //每页显示条目个数
@@ -110,7 +114,8 @@
         showSelection: false,
         showIndex: false,
         showAction: false,
-        actionWidth: 150,
+        actionWidth: 'auto',
+        actionMinWidth: 80,
         actionFixed: 'right',
         showPagination: true,
         pageSizes: () => [10,20,30,40,50,100],
