@@ -128,34 +128,10 @@
         },
     ])
 
-
-    // const validateConfirmPassword = (rule: any, value: string, callback: Function) => {
-    //     console.log('dfjskhfksdhfkdshf',value)
-    // if (value !== modelForm.password) {
-    //     return callback(new Error('两次输入的密码不一致'));
-    // }
-    // }
-
     const validateConfirmPassword = (rule: any, value: string, callback: Function) => {
-    console.log('=== validateConfirmPassword 被调用 ===');
-    console.log('确认密码:', value, '密码:', modelForm.password);
-    
-    // 1. 必填验证
-    if (!value) {
-        callback(new Error('请输入确认密码'));
-        return;
-    }
-    
-    // 2. 长度验证
-    if (value.length < 6 || value.length > 16) {
-        callback(new Error('密码长度必须在6-16个字符以内'));
-        return;
-    }
-    
     // 3. 一致性验证
     if (value !== modelForm.password) {
-        callback(new Error('两次输入的密码不一致'));
-        return;
+        return  callback(new Error('两次输入的密码不一致'));
     }
     
     // 所有验证通过
@@ -174,7 +150,7 @@
         ],
         confirmPassword:[
             { required: true, message: '请输入确认密码', trigger: 'blur' },
-            { validator: validateConfirmPassword, trigger: ['blur', 'change'] }
+            { validator: validateConfirmPassword}
            
         ],
         email: [
@@ -216,36 +192,29 @@
         return baseFormItemList;
     })
 
-     // 根据类型动态返回表单规则
-    const currentRules = computed(() => {
-            console.log('计算 currentRules, type:', props.type);
-        // 如果是查看模式，不需要任何验证
+    const currentRules = <FormRules<RuleForm>>computed(() => {
         if (props.type === 'view') {
-            return {} as FormRules<RuleForm>;
+            return {}
         }
-        const rules = JSON.parse(JSON.stringify(baseRules)) as Record<string, any>;
-        // 编辑模式：删除密码相关的验证规则
+        if (props.type === 'create') {
+            console.log('创建模式，返回完整规则');
+            return baseRules;
+        }
         if (props.type === 'edit') {
-            delete rules.password;
-            delete rules.confirmPassword;
+            const { password, confirmPassword, ...editRules } = baseRules;
+            return editRules
         }
         
-        return rules as FormRules<RuleForm>;
-    })
+        return baseRules;
+    });
+
+    
 
      // 根据类型初始化表单
     const initFormByType = () => {
         // 重置表单
         resetForm();
-        switch (props.type) {
-            case 'create':
-                modelForm.password = "";
-                modelForm.confirmPassword = "";
-                setTimeout(() => {
-                    dialogFormRef.value?.clearValidate?.();
-                }, 50);
-                break;
-                
+        switch (props.type) {       
             case 'edit':
             case 'view':
                 // 编辑和查看模式：填充数据
@@ -280,10 +249,9 @@
             modelForm.phone = ""
             modelForm.avatar = ""
             modelForm.isEnabled = 1
-       dialogFormRef.value?.resetFields?.();
-    //     setTimeout(() => {
-    //         dialogFormRef.value?.clearValidate?.();
-    // }, 50);
+        setTimeout(() => {
+            dialogFormRef.value?.clearValidate?.();
+    }, 50);
     }
 
     const submit = async () => {
@@ -341,7 +309,6 @@
     },{
         immediate: true
     })
-
 
 </script>
 <style scoped lang="scss">

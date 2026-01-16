@@ -84,6 +84,7 @@ const cancel = async () =>{
     }
 
       const validateField = (props?: string | string[]) => {
+        console.log('validateFieldvalidateField',props)
         if (!proFormRef.value) return;
         return proFormRef.value.validateField(props);
     };

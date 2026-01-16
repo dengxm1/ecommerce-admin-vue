@@ -94,6 +94,7 @@
                       size="small"
                       link
                       @click="handleAssignPermission(row)"
+                      :disabled="row.isSystem && row.code == 'TENANT_SUPER_ADMIN'"
                     >
                       权限
                     </el-button>
@@ -106,7 +107,7 @@
                       size="small"
                       link
                       @click="handleEdit(row)"
-                      :disabled="row.isSystem && row.code !== 'TENANT_SUPER_ADMIN'"
+                      :disabled="row.isSystem && row.code == 'TENANT_SUPER_ADMIN'"
                     >
                       编辑
                     </el-button>
@@ -185,9 +186,7 @@ import {
   RefreshRight,
   Edit,
   Lock,
-  CopyDocument,
   More,
-  UserFilled,
   Document,
   Delete,
   User,
@@ -195,7 +194,6 @@ import {
   Star,
   Tools,
   Goods,
-  Monitor,
   Coin,
   Tickets,
   DataAnalysis,
@@ -235,18 +233,6 @@ const searchFormList = ref([
         value: '0',
         label:'禁用'
       }
-    ]
-  },
-  {
-    type:'select',
-    label:'类型',
-    prop:'isSystem',
-    placeholder:'全部类型',
-    clearable: true,
-    style:'width: 100px',
-    options:[
-      { value: 'true', label: '系统' },
-      { value: 'false', label: '自定义' }
     ]
   }
 ])

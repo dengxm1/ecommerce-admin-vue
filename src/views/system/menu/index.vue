@@ -24,49 +24,47 @@
     </div>
 
     <!-- 菜单表格区域 -->
-    <div class="table-section">
-      <el-card shadow="never">
-        <!-- 表格操作栏 -->
-        <div class="table-actions">
-          <div class="actions-left">
-            <span class="menu-statistics">
-              共 {{ menuStatistics.total }} 个菜单项
-              <el-tag size="small" type="info" class="stat-tag">
-                目录: {{ menuStatistics.directory }}
-              </el-tag>
-              <el-tag size="small" type="primary" class="stat-tag">
-                菜单: {{ menuStatistics.menu }}
-              </el-tag>
-              <el-tag size="small" type="warning" class="stat-tag">
-                按钮: {{ menuStatistics.button }}
-              </el-tag>
-            </span>
-          </div>
-          <div class="actions-right">
-            <!-- 查看权限树按钮 -->
-            <el-button 
-              type="info" 
-              :icon="Lock"
-              @click="showPermissionTree"
-              class="permission-btn"
-            >
-              查看权限树
-            </el-button>
-            <el-button 
-              :icon="RefreshRight" 
-              circle 
-              @click="refreshTable"
-              title="刷新"
-            />
-          </div>
-        </div>
-        
-        <ProTable 
-          :data="tableData" 
-          :columns="columns"
-          stripe
-          showAction
+           <ProTable 
+              :data="tableData" 
+              :columns="columns"
+              stripe
+              showAction
           >
+            <template #table-header>
+                <div class="table-actions">
+                  <div class="actions-left">
+                    <span class="menu-statistics">
+                      共 {{ menuStatistics.total }} 个菜单项
+                      <el-tag size="small" type="info" class="stat-tag">
+                        目录: {{ menuStatistics.directory }}
+                      </el-tag>
+                      <el-tag size="small" type="primary" class="stat-tag">
+                        菜单: {{ menuStatistics.menu }}
+                      </el-tag>
+                      <el-tag size="small" type="warning" class="stat-tag">
+                        按钮: {{ menuStatistics.button }}
+                      </el-tag>
+                    </span>
+                  </div>
+                  <div class="actions-right">
+                    <!-- 查看权限树按钮 -->
+                    <el-button 
+                      type="info" 
+                      :icon="Lock"
+                      @click="showPermissionTree"
+                      class="permission-btn"
+                    >
+                      查看权限树
+                    </el-button>
+                    <el-button 
+                      :icon="RefreshRight" 
+                      circle 
+                      @click="refreshTable"
+                      title="刷新"
+                    />
+                  </div>
+                </div>
+            </template>
             <!-- 菜单信息 -->
             <template #menuInfo="{row}">
                 <div class="menu-info-cell">
@@ -256,22 +254,6 @@
               </div>
             </template>
         </ProTable>
-
-        <!-- 分页 -->
-        <div class="pagination-section">
-          <el-pagination
-            v-model:current-page="pagination.current"
-            v-model:page-size="pagination.size"
-            :page-sizes="[10, 20, 50]"
-            layout="total, sizes, prev, pager, next"
-            :total="pagination.total"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            background
-          />
-        </div>
-      </el-card>
-    </div>
 
     <!-- 修改图标对话框 -->
     <el-dialog
