@@ -53,4 +53,11 @@ export function checkedRoleUnique(data: {name: string, code: string}) :Promise<B
   })
 }
 
-
+// 为角色分配权限
+export function assignPermission(data: {roleId: number, menuIds: number[]}) :Promise<BaseResponse>{
+  return request<BaseResponse>({
+    url: '/sys/role/assignPermission',
+    method: 'post',
+    data
+  })
+}

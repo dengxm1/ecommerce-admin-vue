@@ -61,7 +61,20 @@
                     </div>
                 </div>
             </template>
-            
+            <template #name="{row}">
+               <div class="menu-name">
+                  <span class="name"  :style="{'color': row.isSystem == 1?'#e6a23c':'inherit'}">{{ row.name }}</span>
+                  <el-tag 
+                    v-if="row.isSystem == 1"
+                    type="warning"
+                    size="small"
+                    effect="plain"
+                    class="type-tag"
+                  >
+                    系统
+                  </el-tag>
+                </div>
+            </template>
             <!-- 关联用户 -->
             <template #users="{row}">
                <el-button 
@@ -163,11 +176,11 @@
     />
 
     <!-- 权限分配对话框 -->
-    <!-- <PermissionDialog
-      v-model="permissionDialog.visible"
-      :role-data="permissionDialog.roleData"
-      @success="handlePermissionSuccess"
-    /> -->
+     <PermissionDrawer 
+        v-model="permissionDrawer.visible" 
+        :type="permissionDrawer.type"
+        defaultExpandAll
+      />
   </div>
 </template>
 
@@ -177,6 +190,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 import {getRoleListApi,deleteRoleApi} from '@/api/role'
 import RoleFormDialog from './components/RoleFormDialog.vue'
+import PermissionDrawer from '../components/PermissionDrawer/PermissionDrawer.vue'
 
 // 图标
 import {
@@ -246,6 +260,7 @@ const columns = ref<TableColumn[]>([
   {
     prop: 'name',
     label: '角色名称',
+    slot:'name'
   },
    {
     prop: 'code',
@@ -317,10 +332,11 @@ const dialog = reactive({
   roleData: null as any
 })
 
-const permissionDialog = reactive({
+const permissionDrawer = reactive({
   visible: false,
-  roleData: null as any
+  type:'view' as 'edit' | 'view'
 })
+
 
 // 初始化统计信息
 const updateStatistics = () => {
@@ -390,8 +406,8 @@ const handleEdit = (row: any) => {
 }
 
 const handleAssignPermission = (row: any) => {
-  permissionDialog.roleData = { ...row }
-  permissionDialog.visible = true
+  permissionDrawer.visible = true;
+  permissionDrawer.type = 'edit';
 }
 
 const toggleRoleStatus = async (row: any, newStatus: any) => {
@@ -497,7 +513,6 @@ const handleDialogSuccess = () => {
 }
 
 const handlePermissionSuccess = () => {
-  permissionDialog.visible = false
   fetchRoleList()
 }
 
@@ -694,15 +709,28 @@ onMounted(() => {
     }
   }
   
-  /* 分页 */
-  .pagination-section {
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-     justify-content: flex-end;
-  }
 }
+
+   .menu-name {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+      
+      .name {
+        font-weight: 500;
+        color: var(--text-primary);
+        font-size: 14px;
+      }
+      
+      .type-tag{
+        font-size: 12px;
+        padding: 0 4px;
+        height: 18px;
+        line-height: 18px;
+      }
+    }
 
 /* 响应式调整 */
 @media screen and (max-width: 768px) {

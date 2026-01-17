@@ -9,12 +9,13 @@ export interface BackendMenuItem {
     type: 1 | 2 | 3, //1目录 2菜单 3按钮
     path: string,
     component: string | null,
-    icon: string,
-    sort: number,
+    icon?: string, 
+    sort?: number,
     permission?: string,
     isVisible?: number,
-    createdAt: string,
-    updatedAt: string | null
+    createdAt?: string,
+    updatedAt?: string | null,
+    disabled?: boolean,
     children?: BackendMenuItem[]
 }
 // 前端路由配置类型

@@ -7,6 +7,8 @@
                 style="width: 100%"
                 :border="border"
                 :stripe="stripe"
+                :row-key="rowId"
+                :default-expand-all="defaultExpandAll"
                 @selection-change="handleSelectionChange"
                 >
                 <!-- 选择列 -->
@@ -90,6 +92,8 @@
         tags?: boolean
     }
     const props = withDefaults(defineProps<{
+        rowId?: string,
+        defaultExpandAll?: boolean,
         data: Array<Record<string, any>>,  //表格数据
         columns: TableColumn[],  //表格字段
         border?: boolean,
@@ -120,7 +124,8 @@
         showPagination: true,
         pageSizes: () => [10,20,30,40,50,100],
         layout: "total, sizes, prev, pager, next, jumper",
-        background: true
+        background: true,
+        defaultExpandAll: false
     }) 
 
 const emit = defineEmits<{
