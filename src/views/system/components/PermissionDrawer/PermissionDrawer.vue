@@ -11,8 +11,8 @@
                 :data="treeData"
                 show-checkbox
                 node-key="id"
-                :default-checked-keys="defaultCheckedKeys"
                 :props="defaultProps"
+                :default-checked-keys="defaultCheckedKeys"
                 :default-expand-all="defaultExpandAll"
             />
         </el-scrollbar>
@@ -29,11 +29,14 @@
     import {type DrawerProps, type TreeOptionProps} from 'element-plus'
     import {usePermissionStore} from '@/stores/permission'
     import { type BackendMenuItem} from '@/utils/routeUtils'
-    import {assignPermission} from '@/api/role'
+    import {assignPermission, getRoleMenuIds} from '@/api/role'
+
 
     const treeRef = ref();
     const permissionStore = usePermissionStore();
 
+    
+    // 递归设置树节点禁用状态
     const setDisable = (data: BackendMenuItem[]) => {
         data.forEach((item: BackendMenuItem) => {
             item.disabled = true;
@@ -44,6 +47,7 @@
         return data;
     }
 
+    // 树节点属性配置
     const defaultProps: TreeOptionProps = {
         label: 'name',
         children: 'children',
@@ -51,6 +55,7 @@
     }
 
     const props = withDefaults(defineProps<{
+        roleId?: number | null,
         modelValue: boolean,
         type: 'edit' | 'view',
         direction?: DrawerProps['direction'],
@@ -63,6 +68,7 @@
         defaultCheckedKeys: () => [] as (string | number)[]
     })
 
+    // 抽屉标题
     const drawerTitle = computed(() => {
         const obj = {
             'edit': '分配权限',
@@ -72,14 +78,17 @@
     })
 
     const emit = defineEmits<{
-        'update:modelValue': [value: boolean]
+        'update:modelValue': [value: boolean],
+        'confirm': [value?: boolean]
     }>()
 
+    // 抽屉显示与否
     const drawerVisible = computed({
         get: () => props.modelValue,
         set: (value) => emit('update:modelValue', value)
     })
 
+    // 权限树数据
     const treeData = computed<BackendMenuItem[]>(() => {
         const data = JSON.parse(JSON.stringify(permissionStore.treeRoutes));
         if(props.type =='view'){
@@ -89,17 +98,76 @@
         return data
     })
 
+    // 抽屉取消按钮
     const cancelClick = () => {
-
+        drawerVisible.value = false;
     }
 
+    // 确认按钮点击
     const confirmClick = () => {
-        console.log('getCheckedNodes()====',treeRef.value!.getCheckedNodes())
-        console.log('getCheckedKeys()====',treeRef.value!.getCheckedKeys())
-        console.log('getHalfCheckedKeys()====',treeRef.value!.getHalfCheckedKeys())
-        console.log('getHalfCheckedNodes()====',treeRef.value!.getHalfCheckedNodes())
-        
+        if(props.type ==='view'){
+            drawerVisible.value = false;
+            return;
+        }
+        if(props.type ==='edit'){
+            drawerVisible.value = false;
+            const CheckedKeys = treeRef.value!.getCheckedKeys() as Array<string | number>;
+            const HalfCheckedKeys = treeRef.value!.getHalfCheckedKeys() as Array<string | number>;
+            const allKeys = Array.from(new Set([...CheckedKeys, ...HalfCheckedKeys]));
+              if(props.roleId == null){
+                    ElMessage.error('角色ID不能为空')
+                    return;
+                }
+                assignPermission({roleId: props.roleId, menuIds: allKeys})
+                    .then(() => {
+                        ElMessage.success('权限分配成功')
+                        drawerVisible.value = false;
+                        emit('confirm', true);
+                    })
+                    .catch((error) => {
+                     ElMessage.error('权限分配失败')
+                    })
+        }
+
     }
+
+    // 递归设置树节点选中状态
+    const setTreeCheckedKeys = (treeList: BackendMenuItem[], menuIds: Array<string | number>) => {
+        treeList.forEach(tree => {
+            if(!tree.children || tree.children.length ===0){
+                if(menuIds.includes(tree.id)){
+                    treeRef.value?.setChecked(tree.id, true, false);
+            }
+            }else {
+                setTreeCheckedKeys(tree.children, menuIds);
+            }
+        })
+    }
+
+// 监听抽屉显示与否变化
+watch(() => drawerVisible.value, async (newVal, oldVal) => {
+    await nextTick()
+    if (!treeRef.value) return
+    if (newVal) {
+        // 抽屉打开：如果有角色ID，则加载数据
+        if (props.roleId != null) {
+            try {
+                const res = await getRoleMenuIds(props.roleId); // 获取角色权限菜单ID
+                if (res.data) {
+                    const menuIds = res.data as Array<string | number>;
+                    if(menuIds.length ===0) return;
+                    setTreeCheckedKeys(treeData.value,menuIds);
+                }
+            } catch (error) {
+                console.error('获取角色权限菜单ID失败', error)
+            }
+        }
+    } else if (oldVal && !newVal) {
+        // 从打开变为关闭时才清空
+        treeRef.value.setCheckedKeys([])
+    }
+})
+
 </script>
 <style scoped lang="scss">
     

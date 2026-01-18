@@ -134,16 +134,19 @@ const emit = defineEmits<{
     'update:pageSize': [size: number]
 }>()
 
+// 当前页
 const current = computed({
     get: () => props.currentPage,
     set: (current: number) => emit('update:currentPage',current)
 })
 
+// 每页显示条目数
 const size = computed({
     get: () => props.pageSize,
     set: (size: number) => emit('update:pageSize',size)
 })
 
+// 选择项变化
 const handleSelectionChange = (newSelection: any[]) => {
     emit('handleSelectionChange',newSelection)
 }

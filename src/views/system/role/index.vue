@@ -32,6 +32,7 @@
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
           :total="pagination.total"
+          actionWidth="240"
           >
             <template #table-header>
                 <div class="table-actions">
@@ -100,8 +101,7 @@
             <!-- 操作列 -->
             <template #action="{row}">
                  <div class="action-buttons">
-                  <el-tooltip content="分配权限" placement="top">
-                    <el-button 
+                   <el-button 
                       type="primary" 
                       :icon="Lock" 
                       size="small"
@@ -109,12 +109,10 @@
                       @click="handleAssignPermission(row)"
                       :disabled="row.isSystem && row.code == 'TENANT_SUPER_ADMIN'"
                     >
-                      权限
+                      分配权限
                     </el-button>
-                  </el-tooltip>
                   
-                  <el-tooltip content="编辑" placement="top">
-                    <el-button 
+                   <el-button 
                       type="success" 
                       :icon="Edit" 
                       size="small"
@@ -124,7 +122,6 @@
                     >
                       编辑
                     </el-button>
-                  </el-tooltip>
                   
                   <el-dropdown 
                     @command="handleMoreCommand($event, row)"
@@ -179,7 +176,8 @@
      <PermissionDrawer 
         v-model="permissionDrawer.visible" 
         :type="permissionDrawer.type"
-        defaultExpandAll
+        :roleId="permissionDrawer.roleId"
+        @confirm="handleDialogSuccess"
       />
   </div>
 </template>
@@ -260,7 +258,7 @@ const columns = ref<TableColumn[]>([
   {
     prop: 'name',
     label: '角色名称',
-    slot:'name'
+    slot:'name',
   },
    {
     prop: 'code',
@@ -334,19 +332,9 @@ const dialog = reactive({
 
 const permissionDrawer = reactive({
   visible: false,
-  type:'view' as 'edit' | 'view'
+  type:'view' as 'edit' | 'view',
+  roleId: null as number | null
 })
-
-
-// 初始化统计信息
-const updateStatistics = () => {
-  const data = tableData.value
-  roleStatistics.total = data.length
-  roleStatistics.enabled = data.filter(item => item.status === 1).length
-  roleStatistics.disabled = data.filter(item => item.status === 0).length
-  roleStatistics.system = data.filter(item => item.isSystem).length
-  roleStatistics.custom = data.filter(item => !item.isSystem).length
-}
 
 // 方法
 const handleSearch = () => {
@@ -408,45 +396,9 @@ const handleEdit = (row: any) => {
 const handleAssignPermission = (row: any) => {
   permissionDrawer.visible = true;
   permissionDrawer.type = 'edit';
+  permissionDrawer.roleId = row.id;
 }
 
-const toggleRoleStatus = async (row: any, newStatus: any) => {
-  // 超级管理员角色不允许禁用
-  if (row.code === 'TENANT_SUPER_ADMIN' && newStatus === 0) {
-    ElMessage.warning('超级管理员角色不能禁用')
-    row.status = 1
-    return
-  }
-  
-  try {
-    row.statusLoading = true
-    
-    const action = newStatus === 1 ? '启用' : '禁用'
-    const confirmMessage = newStatus === 0 
-      ? `禁用后，关联的 ${row.userCount} 个用户将无法使用此角色的权限，确定要禁用吗？`
-      : `确定要启用角色 "${row.name}" 吗？`
-    
-    // await ElMessageBox.confirm(
-    //   confirmMessage,
-    //   `${action}确认`,
-    //   {
-    //     confirmButtonText: `确定${action}`,
-    //     cancelButtonText: '取消',
-    //     type: newStatus === 1 ? 'success' : 'warning'
-    //   }
-    // )
-    
-    // API调用
-    // await toggleRoleStatus(row.id, newStatus)
-    // updateStatistics()
-    
-  } catch (error) {
-    // 用户取消，恢复原状态
-    row.status = newStatus === 1 ? 0 : 1
-  } finally {
-    row.statusLoading = false
-  }
-}
 
 const handleMoreCommand = (command: string, row: any) => {
   switch (command) {
@@ -512,42 +464,11 @@ const handleDialogSuccess = () => {
   fetchRoleList()
 }
 
-const handlePermissionSuccess = () => {
-  fetchRoleList()
-}
-
 const formatTime = (time: string, format: string = 'YYYY-MM-DD HH:mm') => {
   if (!time) return '-'
   return dayjs(time).format(format)
 }
 
-const getRoleIcon = (code: string) => {
-  const iconMap: Record<string, any> = {
-    'TENANT_SUPER_ADMIN': Star,
-    'SYSTEM_ADMIN': Setting,
-    'PRODUCT_MANAGER': Goods,
-    'ORDER_SERVICE': Tickets,
-    'FINANCE_STAFF': Coin,
-    'WAREHOUSE_KEEPER': Tools,
-    'MARKETING_SPECIALIST': Present,
-    'DATA_ANALYST': DataAnalysis
-  }
-  return iconMap[code] || User
-}
-
-const getRoleIconColor = (code: string) => {
-  const colorMap: Record<string, string> = {
-    'TENANT_SUPER_ADMIN': '#E6A23C',  // 金色
-    'SYSTEM_ADMIN': '#9B39F4',       // 紫色
-    'PRODUCT_MANAGER': '#67C23A',    // 绿色
-    'ORDER_SERVICE': '#409EFF',      // 蓝色
-    'FINANCE_STAFF': '#F56C6C',      // 红色
-    'WAREHOUSE_KEEPER': '#909399',   // 灰色
-    'MARKETING_SPECIALIST': '#FF85C0', // 粉色
-    'DATA_ANALYST': '#36CFC9'        // 青色
-  }
-  return colorMap[code] || '#409EFF'
-}
 
 // 初始化
 onMounted(() => {
