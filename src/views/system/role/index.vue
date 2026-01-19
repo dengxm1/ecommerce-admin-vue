@@ -274,31 +274,31 @@ const columns = ref<TableColumn[]>([
     prop: 'users',
     label: '用户',
     slot:'users',
-    width: 120
+    // width: 120
   },
   {
     prop: 'permissionCount',
     label: '权限',
     sortable: true,
-    width: 80,
+    width: 100,
     columnFormatter:(row) => {
       return row.buttonPermissionCount + row.menuPermissionCount
     }
   },
-  {
-      prop: 'status',
-      label:'状态',
-      tags: true,
-      width: 80,
-      tagFormatter:(row,type) => {
-        if(type == 'text'){
-            return row.status ==1 ? '启用' : '禁用'
-        }else{
-          return row.status ==1 ? 'success' : 'danger'
-        }
+  // {
+  //     prop: 'status',
+  //     label:'状态',
+  //     tags: true,
+  //     width: 80,
+  //     tagFormatter:(row,type) => {
+  //       if(type == 'text'){
+  //           return row.status ==1 ? '启用' : '禁用'
+  //       }else{
+  //         return row.status ==1 ? 'success' : 'danger'
+  //       }
         
-      }
-  },
+  //     }
+  // },
   {
     prop: 'createdAt',
     label: '创建时间',

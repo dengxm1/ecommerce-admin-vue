@@ -54,3 +54,12 @@ export function resetUserPasswordApi(data: {id: number, password: string}) :Prom
     data
   })
 }
+
+// 为用户分配角色
+export function assignUserRoleApi(data: {userId: number, roleIds: number[]}) :Promise<BaseResponse>{
+  return request<BaseResponse>({
+    url: '/sys/user/assignRoles',
+    method: 'post',
+    data
+  })
+}

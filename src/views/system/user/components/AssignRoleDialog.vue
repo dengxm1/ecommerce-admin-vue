@@ -45,7 +45,7 @@
           <el-tag
             v-for="role in userCurrentRoles"
             :key="role.id"
-            :type="getRoleType(role.code)"
+            type="info"
             size="small"
             closable
             @close="removeRole(role.id)"
@@ -75,13 +75,6 @@
           >
             {{ isAllSelected ? '取消全选' : '全选' }}
           </el-button>
-          <el-button 
-            type="text" 
-            size="small"
-            @click="toggleRoleFilter"
-          >
-            {{ showSystemRoles ? '仅显示可用角色' : '显示所有角色' }}
-          </el-button>
         </div>
       </div>
 
@@ -92,7 +85,6 @@
           placeholder="搜索角色名称或编码"
           clearable
           :prefix-icon="Search"
-          @input="filterRoles"
         />
       </div>
 
@@ -113,24 +105,37 @@
             v-for="role in filteredRoles"
             :key="role.id"
             class="role-item"
-            :class="{ 'disabled-role': role.code === 'TENANT_SUPER_ADMIN' && !isCurrentUserSuperAdmin }"
+            :class="{ 'disabled-role': role.code === 'TENANT_SUPER_ADMIN'}"
           >
             <el-checkbox 
-              :label="role.id"
-              :disabled="role.code === 'TENANT_SUPER_ADMIN' && !isCurrentUserSuperAdmin"
+              :value="role.id"
+              :disabled="role.code === 'TENANT_SUPER_ADMIN'"
             >
               <div class="role-item-content">
                 <div class="role-main">
                   <div class="role-name-code">
-                    <span class="role-name">{{ role.name }}</span>
-                    <el-tag 
-                      size="small" 
-                      :type="getRoleType(role.code)"
-                      effect="light"
-                    >
-                      {{ role.code }}
-                    </el-tag>
+                      <div class="role-name-section">
+                        <span class="role-name">{{ role.name }}</span>
+                        <el-tag 
+                          size="small" 
+                          type="info"
+                          effect="light"
+                        >
+                          {{ role.code }}
+                        </el-tag>
+                      </div>
+                      <div class="role-actions">
+                        <el-button 
+                          type="text" 
+                          size="small"
+                          @click.stop="previewRolePermissions(role)"
+                        >
+                          <el-icon><View /></el-icon>
+                          预览权限
+                        </el-button>
+                      </div>
                   </div>
+
                   <div class="role-description">
                     {{ role.description || '暂无描述' }}
                   </div>
@@ -138,26 +143,16 @@
                 <div class="role-stats">
                   <div class="stat-item">
                     <el-icon><Menu /></el-icon>
-                    <span>{{ role.menuCount || 0 }} 菜单</span>
+                    <span>{{ role.menuPermissionCount || 0 }} 菜单</span>
                   </div>
                   <div class="stat-item">
                     <el-icon><Operation /></el-icon>
-                    <span>{{ role.buttonCount || 0 }} 按钮</span>
+                    <span>{{ role.buttonPermissionCount || 0 }} 按钮</span>
                   </div>
                   <div class="stat-item">
                     <el-icon><User /></el-icon>
                     <span>{{ role.userCount || 0 }} 用户</span>
                   </div>
-                </div>
-                <div class="role-actions">
-                  <el-button 
-                    type="text" 
-                    size="small"
-                    @click.stop="previewRolePermissions(role)"
-                  >
-                    <el-icon><View /></el-icon>
-                    预览权限
-                  </el-button>
                 </div>
               </div>
             </el-checkbox>
@@ -165,75 +160,6 @@
         </el-checkbox-group>
       </div>
     </div>
-
-    <!-- 权限预览弹窗 -->
-    <el-dialog
-      v-model="previewVisible"
-      :title="`${previewRole?.name} - 权限预览`"
-      width="700px"
-      append-to-body
-    >
-      <div class="permission-preview">
-        <div v-if="previewRole" class="preview-header">
-          <el-tag :type="getRoleType(previewRole.code)">
-            {{ previewRole.code }}
-          </el-tag>
-          <span class="preview-desc">{{ previewRole.description }}</span>
-        </div>
-        
-        <el-tree
-          ref="previewTreeRef"
-          :data="permissionTree"
-          :props="treeProps"
-          :default-expand-all="true"
-          :highlight-current="true"
-          node-key="id"
-          class="permission-tree"
-        >
-          <template #default="{ node, data }">
-            <div class="tree-node">
-              <div class="node-content">
-                <el-icon v-if="data.icon" :size="16" class="node-icon">
-                  <component :is="data.icon" />
-                </el-icon>
-                <span class="node-label">{{ data.label }}</span>
-                <span v-if="data.type === 3" class="permission-code">
-                  {{ data.permission }}
-                </span>
-              </div>
-              <div class="node-type">
-                <el-tag 
-                  v-if="data.type === 1" 
-                  size="small" 
-                  type="info"
-                >目录</el-tag>
-                <el-tag 
-                  v-if="data.type === 2" 
-                  size="small" 
-                  type="primary"
-                >菜单</el-tag>
-                <el-tag 
-                  v-if="data.type === 3" 
-                  size="small" 
-                  type="success"
-                >按钮</el-tag>
-              </div>
-            </div>
-          </template>
-        </el-tree>
-        
-        <div class="preview-summary">
-          <el-text type="info">
-            共 {{ permissionTree.length }} 个权限节点
-          </el-text>
-        </div>
-      </div>
-      
-      <template #footer>
-        <el-button @click="previewVisible = false">关闭</el-button>
-      </template>
-    </el-dialog>
-
     <!-- 操作按钮 -->
     <template #footer>
       <div class="dialog-footer">
@@ -259,8 +185,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, nextTick } from 'vue'
-import { ElMessage, ElMessageBox, ElTree } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Search,
   Select,
@@ -269,9 +194,12 @@ import {
   Operation,
   User,
   View,
-  CircleCheck,
-  CircleClose
 } from '@element-plus/icons-vue'
+import {useRoleStore, type Role} from '@/stores/role'
+import {assignUserRoleApi} from '@/api/user'
+
+
+const roleStore = useRoleStore();
 
 // API接口
 // import { 
@@ -280,18 +208,6 @@ import {
 //   assignUserRolesApi 
 // } from '@/api/user'
 // import { getRolePermissionsApi } from '@/api/role'
-
-interface Role {
-  id: number
-  name: string
-  code: string
-  description?: string
-  menuCount?: number
-  buttonCount?: number
-  userCount?: number
-  isSystem?: boolean
-  createdAt?: string
-}
 
 interface UserData {
   id: number
@@ -302,17 +218,12 @@ interface UserData {
   avatar?: string
   isEnabled: boolean
   tenantId?: number
+  roles?: Array<{
+      roleCode: string,
+      roleName: string,
+      roleId: number
+    }>
 }
-
-interface PermissionNode {
-  id: number
-  label: string
-  children?: PermissionNode[]
-  icon?: string
-  type?: number  // 1:目录 2:菜单 3:按钮
-  permission?: string
-}
-
 const props = defineProps<{
   modelValue: boolean
   userData: UserData | null
@@ -323,7 +234,7 @@ const emit = defineEmits<{
   'success': []
 }>()
 
-// 弹窗状态
+// 弹窗显示状态
 const dialogVisible = computed({
   get: () => props.modelValue,
   set: (value) => emit('update:modelValue', value)
@@ -334,109 +245,9 @@ const dialogTitle = computed(() => {
     ? `为 ${props.userData.username} 分配角色`
     : '分配角色'
 })
-
-// 数据状态
-const allRoles = ref<Role[]>([
-    {
-        id: 1,
-        name:'超级管理员',
-        code:'super-code',
-        description:'超级管理员'
-    },
-     {
-        id: 2,
-        name:'商品管理员',
-        code:'2',
-        description:'管理商品'
-    },
-        {
-        id: 3,
-        name:'仓库管理员',
-        code:'3',
-        description:'管理仓库'
-    },
-])
-const filteredRoles = ref<Role[]>([])
-const userCurrentRoles = ref<Role[]>([])
-const selectedRoleIds = ref<number[]>([])
-const originalRoleIds = ref<number[]>([])
-
-// 搜索和筛选
-const roleKeyword = ref('')
-const showSystemRoles = ref(false)
-const isCurrentUserSuperAdmin = ref(false) // 当前登录用户是否为超管
-
-// 权限预览
-const previewVisible = ref(false)
-const previewRole = ref<Role | null>(null)
-const permissionTree = ref<PermissionNode[]>([])
-const previewTreeRef = ref<InstanceType<typeof ElTree>>()
-const treeProps = {
-  children: 'children',
-  label: 'label'
-}
-
-// 加载状态
-const loading = ref(false)
-const submitting = ref(false)
-
-// 计算属性
-const isAllSelected = computed(() => {
-  return selectedRoleIds.value.length === filteredRoles.value.length
-})
-
-const hasChanges = computed(() => {
-  const currentIds = [...selectedRoleIds.value].sort()
-  const originalIds = [...originalRoleIds.value].sort()
-  return JSON.stringify(currentIds) !== JSON.stringify(originalIds)
-})
-
-// 获取角色类型
-const getRoleType = (code: string) => {
-  const typeMap: Record<string, string> = {
-    'TENANT_SUPER_ADMIN': 'danger',
-    'SYS_ADMIN': 'warning',
-    'PRODUCT_MANAGER': 'success',
-    'ORDER_MANAGER': 'primary',
-    'FINANCE_MANAGER': 'info'
-  }
-  return typeMap[code] || 'info'
-}
-
-// 初始化数据
-const initDialog = async () => {
-  if (!props.userData) return
-  
-  loading.value = true
-  try {
-    // 并行获取所有角色和用户当前角色
-    // const [rolesRes, userRolesRes] = await Promise.all([
-    // //   getRoleListApi({ pageSize: 1000 }), // 获取所有角色
-    // //   getUserRolesApi(props.userData.id)
-    // ])
-    
-    // // 处理角色数据
-    // allRoles.value = rolesRes.data?.list || []
-    // userCurrentRoles.value = userRolesRes.data || []
-    
-    // // 设置选中的角色ID
-    // selectedRoleIds.value = userCurrentRoles.value.map(role => role.id)
-    // originalRoleIds.value = [...selectedRoleIds.value]
-    
-    // 初始筛选
-    filterRoles()
-    
-  } catch (error) {
-    console.error('初始化弹窗失败:', error)
-    ElMessage.error('加载角色数据失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-// 筛选角色
-const filterRoles = () => {
-  let filtered = allRoles.value
+// 角色数据
+const filteredRoles = computed<Role[]>(() => {
+  let filtered = roleStore.roleList
   
   // 关键词筛选
   if (roleKeyword.value.trim()) {
@@ -453,8 +264,39 @@ const filterRoles = () => {
     filtered = filtered.filter(role => !role.isSystem)
   }
   
-  filteredRoles.value = filtered
-}
+  return filtered
+})
+// 用户当前角色
+const userCurrentRoles = ref<Role[]>([]);
+// 选中角色ID
+const selectedRoleIds = ref<number[]>([]);
+// 初始角色ID（用于变更检测）
+const originalRoleIds = ref<number[]>([])
+
+// 搜索和筛选
+const roleKeyword = ref('')
+// 是否显示系统角色
+const showSystemRoles = ref(false)
+// 当前登录用户是否为超管
+const isCurrentUserSuperAdmin = ref(false) 
+
+// 提交状态
+const submitting = ref(false)
+
+// 计算属性
+const isAllSelected = computed(() => {
+  return selectedRoleIds.value.length === filteredRoles.value.length
+})
+
+// 检测角色是否有变更，用于设置确认分配按钮的可用状态
+const hasChanges = computed(() => {
+  const currentIds = [...selectedRoleIds.value].sort()
+  const originalIds = [...originalRoleIds.value].sort()
+  return JSON.stringify(currentIds) !== JSON.stringify(originalIds)
+})
+
+
+
 
 // 切换全选
 const toggleSelectAll = () => {
@@ -467,12 +309,6 @@ const toggleSelectAll = () => {
   }
 }
 
-// 切换角色筛选
-const toggleRoleFilter = () => {
-  showSystemRoles.value = !showSystemRoles.value
-  filterRoles()
-}
-
 // 移除角色
 const removeRole = (roleId: number) => {
   selectedRoleIds.value = selectedRoleIds.value.filter(id => id !== roleId)
@@ -480,88 +316,15 @@ const removeRole = (roleId: number) => {
 
 // 预览角色权限
 const previewRolePermissions = async (role: Role) => {
-  previewRole.value = role
-  previewVisible.value = true
   
   try {
-    // const res = await getRolePermissionsApi(role.id)
-    // // 转换数据为树形结构
-    // permissionTree.value = transformPermissionsToTree(res.data || [])
-    
-    // await nextTick()
-    // if (previewTreeRef.value) {
-    //   // 展开所有节点
-    //   const allKeys = getAllNodeKeys(permissionTree.value)
-    //   previewTreeRef.value.setExpandedKeys(allKeys)
-    // }
+
   } catch (error) {
     console.error('获取权限数据失败:', error)
     ElMessage.error('加载权限数据失败')
   }
 }
 
-// 权限数据转树形结构
-const transformPermissionsToTree = (permissions: any[]): PermissionNode[] => {
-  // 这里需要根据您的实际数据结构进行调整
-  // 示例转换逻辑
-  const menuMap = new Map()
-  const tree: PermissionNode[] = []
-  
-  // 先添加一级菜单
-  permissions.forEach(perm => {
-    if (perm.parentId === 0) {
-      const node: PermissionNode = {
-        id: perm.id,
-        label: perm.name,
-        icon: perm.icon,
-        type: perm.type,
-        permission: perm.permission
-      }
-      if (perm.type === 1) { // 目录
-        node.children = []
-      }
-      menuMap.set(perm.id, node)
-      tree.push(node)
-    }
-  })
-  
-  // 添加子菜单
-  permissions.forEach(perm => {
-    if (perm.parentId !== 0 && menuMap.has(perm.parentId)) {
-      const parent = menuMap.get(perm.parentId)
-      if (parent?.children) {
-        const node: PermissionNode = {
-          id: perm.id,
-          label: perm.name,
-          icon: perm.icon,
-          type: perm.type,
-          permission: perm.permission
-        }
-        parent.children.push(node)
-        menuMap.set(perm.id, node)
-      }
-    }
-  })
-  
-  return tree
-}
-
-// 获取所有节点key
-const getAllNodeKeys = (tree: PermissionNode[]): number[] => {
-  const keys: number[] = []
-  
-  const traverse = (nodes: PermissionNode[]) => {
-    nodes.forEach(node => {
-      keys.push(node.id)
-      if (node.children) {
-        traverse(node.children)
-      }
-    })
-  }
-  
-  traverse(tree)
-  return keys
-}
 
 // 提交分配
 const handleSubmit = async () => {
@@ -586,15 +349,9 @@ const handleSubmit = async () => {
       roleIds: selectedRoleIds.value
     }
     
-    // const res = await assignUserRolesApi(submitData)
+    const res = await assignUserRoleApi(submitData)
     
-    // ElMessage.success(res.message || '角色分配成功')
-    
-    // 更新用户当前角色
-    userCurrentRoles.value = allRoles.value.filter(role => 
-      selectedRoleIds.value.includes(role.id)
-    )
-    originalRoleIds.value = [...selectedRoleIds.value]
+    ElMessage.success(res.message || '角色分配成功')
     
     // 关闭弹窗并通知成功
     dialogVisible.value = false
@@ -637,17 +394,28 @@ const handleDialogClose = () => {
   // 重置状态
   roleKeyword.value = ''
   showSystemRoles.value = false
-  previewVisible.value = false
-  previewRole.value = null
-  permissionTree.value = []
 }
 
-// 监听弹窗显示
-watch(() => props.modelValue, (newVal) => {
-  if (newVal && props.userData) {
-    initDialog()
+// 监听用户数据变化，加载当前角色
+watch(() => props.userData, (newUser) => {
+  if (newUser) {
+    // 加载用户当前角色
+    userCurrentRoles.value = newUser.roles?.map(role => ({
+      id: role.roleId,
+      name: role.roleName,
+      code: role.roleCode
+    })) || []
+    
+    // 设置初始选中角色
+    selectedRoleIds.value = userCurrentRoles.value.map(role => role.id)
+    originalRoleIds.value = [...selectedRoleIds.value]
+  } else {
+    userCurrentRoles.value = []
+    selectedRoleIds.value = []
+    originalRoleIds.value = []
   }
 }, { immediate: true })
+
 </script>
 
 <style scoped lang="scss">
@@ -655,7 +423,7 @@ watch(() => props.modelValue, (newVal) => {
   padding: 16px;
   background: #f8f9fa;
   border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   border: 1px solid var(--el-border-color-light);
   
   .user-avatar-info {
@@ -724,7 +492,7 @@ watch(() => props.modelValue, (newVal) => {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     
     .section-title {
       display: flex;
@@ -746,7 +514,7 @@ watch(() => props.modelValue, (newVal) => {
   }
   
   .role-list-container {
-    max-height: 400px;
+    height: 250px;
     overflow-y: auto;
     border: 1px solid var(--el-border-color-light);
     border-radius: 6px;
@@ -763,9 +531,13 @@ watch(() => props.modelValue, (newVal) => {
     .role-item {
       padding: 12px;
       border-radius: 6px;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
       border: 1px solid var(--el-border-color-light);
       transition: all 0.3s ease;
+
+      &:first-child {
+        margin-top: 4px;
+      }
       
       &:last-child {
         margin-bottom: 0;
@@ -803,9 +575,13 @@ watch(() => props.modelValue, (newVal) => {
           .role-name-code {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
             margin-bottom: 4px;
-            
+            .role-name-section{
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            }
             .role-name {
               font-size: 14px;
               font-weight: 500;

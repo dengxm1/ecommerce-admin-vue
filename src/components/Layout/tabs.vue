@@ -26,58 +26,15 @@
 
 <script setup lang="ts">
 import { useTabsStore } from '@/stores/tabs'
-import {
-  House,
-  Setting,
-  User,
-  Lock,
-  Goods,
-  Document
-} from '@element-plus/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
 const tabsStore = useTabsStore()
 
-// 图标映射
-const iconComponents: Record<string, any> = {
-  'ep:home': House,
-  'ep:setting': Setting,
-  'ep:user': User,
-  'ep:lock': Lock,
-  'ep:goods': Goods,
-  'ep:document': Document,
-  'ep:sold-out': 'SoldOut',
-  'ep:office-building': 'OfficeBuilding',
-  'ep:promotion': 'Promotion',
-  'ep:user-filled': 'UserFilled',
-  'ep:money': 'Money',
-  'ep:data-analysis': 'DataAnalysis',
-  'ep:tools': 'Tools',
-  'ep:list': 'List',
-  'ep:grid': 'Grid',
-  'ep:box': 'Box',
-  'ep:location': 'Location',
-  'ep:discount': 'Discount',
-  'ep:present': 'Present',
-  'ep:sort-up': 'SortUp',
-  'ep:trend-charts': 'TrendCharts',
-  'ep:bank-card': 'BankCard',
-  'ep:pie-chart': 'PieChart',
-  'ep:credit-card': 'CreditCard',
-}
-
 // 计算属性
 const tabs = computed(() => tabsStore.tabs)
 const showTabs = computed(() => tabsStore.tabs.length > 0)
 
-// 获取图标组件
-const getIconComponent = (iconName: string) => {
-  if (iconComponents[iconName]) {
-    return iconComponents[iconName]
-  }
-  return Document // 默认图标
-}
 
 // 标签点击事件
 const handleTabClick = (pane: any) => {
@@ -143,7 +100,6 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-/* 使用 Element Plus 的默认样式，只做必要的微调 */
 .page-tabs {
   :deep(.el-tabs__header) {
     margin: 0;

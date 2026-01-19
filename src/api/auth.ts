@@ -24,7 +24,7 @@ export function getUserMenu() {
   })
 }
 
-// 获取用户权限列表
+// 获取当前登录用户的权限列表
 export function getPermissionsListApi() {
   return request({
     url: '/system/auth/getUserPermissions',

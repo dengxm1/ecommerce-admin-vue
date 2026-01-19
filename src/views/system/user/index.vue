@@ -276,8 +276,6 @@ import {
   Document
 } from '@element-plus/icons-vue'
 import {type TableColumn} from '@/components/ProTable/ProTable.vue'
-// 表格引用
-const userTableRef = ref<InstanceType<typeof ElTable>>()
 
 // 搜索表单
 const searchForm = reactive({
@@ -436,7 +434,6 @@ const pagination = reactive({
 
 // 表格数据
 const loading = ref(false)
-const userList = ref<any[]>([])
 const selectedRows = ref<any[]>([])
 
 // 对话框状态
@@ -449,7 +446,7 @@ const userDialog = reactive({
 
 const roleDialog = reactive({
   visible: false,
-  userData: null as any
+  userData: null as any,
 })
 
 const resetDialog = reactive({
@@ -670,6 +667,7 @@ const handleDialogSuccess = () => {
 }
 
 const handleRoleAssignSuccess = () => {
+  roleDialog.userData = null
   fetchUserList()
 }
 
