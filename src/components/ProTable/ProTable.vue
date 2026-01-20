@@ -3,6 +3,7 @@
         <el-card shadow="never">
             <slot name="table-header"></slot>
             <el-table 
+                v-loading="loading"
                 :data="data" 
                 style="width: 100%"
                 :border="border"
@@ -110,7 +111,8 @@
         pageSizes?: number[],  //每页显示个数选择器的选项设置
         total?: number, //分页总条目数
         layout?: string, //分页组件布局，子组件名用逗号分隔
-        background?: boolean
+        background?: boolean,
+        loading?: boolean
     }>(),{
         columns: () => [],
         border:false,
@@ -125,7 +127,8 @@
         pageSizes: () => [10,20,30,40,50,100],
         layout: "total, sizes, prev, pager, next, jumper",
         background: true,
-        defaultExpandAll: false
+        defaultExpandAll: false,
+        loading: false
     }) 
 
 const emit = defineEmits<{
@@ -150,6 +153,10 @@ const size = computed({
 const handleSelectionChange = (newSelection: any[]) => {
     emit('handleSelectionChange',newSelection)
 }
+
+watch(() => props.loading, (newVal) => {
+  console.log('ProTable loading 状态变化:', newVal)
+})
 
 </script>
 <style scoped lang="scss">
@@ -184,4 +191,5 @@ const handleSelectionChange = (newSelection: any[]) => {
     justify-content: flex-end;
   }
 }
+
 </style>

@@ -33,6 +33,7 @@
           v-model:page-size="pagination.size"
           :total="pagination.total"
           actionWidth="240"
+          :loading="loading"
           >
             <template #table-header>
                 <div class="table-actions">
@@ -213,6 +214,8 @@ import {
 } from '@element-plus/icons-vue'
 import { type TableColumn } from '@/components/ProTable/ProTable.vue'
 
+
+const loading = ref(false)
 // 搜索表单
 const searchForm = reactive({
   keyword: '',
@@ -350,6 +353,7 @@ const handleReset = () => {
 
 // 获取角色列表
 const fetchRoleList = async () => {
+  loading.value = true
   try{
     let params = {
       pageNum: pagination.current,
@@ -362,6 +366,10 @@ const fetchRoleList = async () => {
   }catch(error){
     ElMessage.error('获取用户列表失败')
     console.error(error)
+  }finally{
+    setTimeout(() => {
+      loading.value = false
+    }, 200)
   }
 }
 
@@ -457,7 +465,6 @@ const deleteSingleRole = async (row: any) => {
 
 const refreshTable = () => {
   fetchRoleList()
-  ElMessage.success('刷新成功')
 }
 
 const handleDialogSuccess = () => {

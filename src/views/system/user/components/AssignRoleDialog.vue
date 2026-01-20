@@ -50,8 +50,10 @@
             closable
             @close="removeRole(role.id)"
           >
-            {{ role.name }}
-            <el-icon class="tag-icon"><UserFilled /></el-icon>
+            <div class="tags-content">
+              <span>{{ role.name }}</span>
+              <el-icon class="tag-icon"><UserFilled /></el-icon>
+            </div>
           </el-tag>
         </div>
       </div>
@@ -182,6 +184,13 @@
       </div>
     </template>
   </el-dialog>
+ <!-- 权限分配对话框 -->
+     <PermissionDrawer 
+        v-model="permissionDrawer.visible" 
+        :type="permissionDrawer.type"
+        :roleId="permissionDrawer.roleId"
+      />
+
 </template>
 
 <script setup lang="ts">
@@ -197,17 +206,9 @@ import {
 } from '@element-plus/icons-vue'
 import {useRoleStore, type Role} from '@/stores/role'
 import {assignUserRoleApi} from '@/api/user'
-
+import PermissionDrawer from '../../components/PermissionDrawer/PermissionDrawer.vue'
 
 const roleStore = useRoleStore();
-
-// API接口
-// import { 
-//   getRoleListApi, 
-//   getUserRolesApi, 
-//   assignUserRolesApi 
-// } from '@/api/user'
-// import { getRolePermissionsApi } from '@/api/role'
 
 interface UserData {
   id: number
@@ -224,6 +225,13 @@ interface UserData {
       roleId: number
     }>
 }
+
+const permissionDrawer = reactive({
+  visible: false,
+  type:'view' as 'edit' | 'view',
+  roleId: null as number | null
+})
+
 const props = defineProps<{
   modelValue: boolean
   userData: UserData | null
@@ -311,18 +319,15 @@ const toggleSelectAll = () => {
 
 // 移除角色
 const removeRole = (roleId: number) => {
-  selectedRoleIds.value = selectedRoleIds.value.filter(id => id !== roleId)
+  selectedRoleIds.value = selectedRoleIds.value.filter(id => id !== roleId);
+  userCurrentRoles.value = userCurrentRoles.value.filter(role => role.id !== roleId);
 }
 
 // 预览角色权限
 const previewRolePermissions = async (role: Role) => {
-  
-  try {
-
-  } catch (error) {
-    console.error('获取权限数据失败:', error)
-    ElMessage.error('加载权限数据失败')
-  }
+   permissionDrawer.visible = true;
+    permissionDrawer.type = 'view';
+    permissionDrawer.roleId = role.id;
 }
 
 
@@ -472,9 +477,13 @@ watch(() => props.userData, (newUser) => {
       
       .el-tag {
         .tag-icon {
-          margin-left: 4px;
           font-size: 12px;
         }
+      }
+      .tags-content{
+        display: flex;
+        align-items: center;
+        gap: 4px;
       }
     }
   }

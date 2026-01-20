@@ -48,6 +48,7 @@
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
           :total="pagination.total"
+          :loading="loading"
           showSelection
           showAction
           stripe
@@ -235,24 +236,24 @@
     />
 
     <!-- 重置密码对话框 -->
-    <!-- <ResetPasswordDialog
+    <ResetPasswordDialog
       v-model="resetDialog.visible"
       :user-data="resetDialog.userData"
       @success="handleResetSuccess"
-    /> -->
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
-import { ElMessage, ElMessageBox, ElTable } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 import {getUserListApi,updateUserStatusApi,deleteUserApi} from '@/api/user'
 
 // 组件
 import UserFormDialog from './components/UserFormDialog.vue'
 import AssignRoleDialog from './components/AssignRoleDialog.vue'
-// import ResetPasswordDialog from './components/ResetPasswordDialog.vue'
+import ResetPasswordDialog from './components/ResetPasswordDialog.vue'
 
 
 // 图标
@@ -272,8 +273,7 @@ import {
   UserFilled,
   Lock,
   More,
-  View,
-  Document
+  View
 } from '@element-plus/icons-vue'
 import {type TableColumn} from '@/components/ProTable/ProTable.vue'
 
@@ -432,7 +432,7 @@ const pagination = reactive({
   total: 0
 })
 
-// 表格数据
+
 const loading = ref(false)
 const selectedRows = ref<any[]>([])
 
@@ -501,7 +501,9 @@ const fetchUserList = async () => {
     ElMessage.error('获取用户列表失败')
     console.error(error)
   } finally {
-    loading.value = false
+    setTimeout(() => {
+      loading.value = false
+    }, 200)
   }
 }
 
@@ -512,7 +514,7 @@ const handleSelectionChange = (rows: any[]) => {
 
 const handleSortChange = (sort: any) => {
   console.log('排序变化:', sort)
-  // 实际项目中这里会调用API重新获取排序后的数据
+  // 调用API重新获取排序后的数据
 }
 
 const handleSizeChange = (size: number) => {
@@ -672,9 +674,8 @@ const handleRoleAssignSuccess = () => {
 }
 
 const handleResetSuccess = () => {
-  resetDialog.visible = false
   // 如果需要刷新密码状态，可以重新获取用户数据
-  // fetchUserList()
+  fetchUserList()
 }
 
 const formatTime = (time: string, format: string = 'YYYY-MM-DD HH:mm') => {

@@ -20,7 +20,7 @@
     <template #footer>
       <div style="flex: auto">
         <el-button @click="cancelClick">取消</el-button>
-        <el-button type="primary" @click="confirmClick">确认</el-button>
+        <el-button type="primary" v-if="allowConfirm" @click="confirmClick">确认</el-button>
       </div>
     </template>
   </el-drawer>
@@ -68,6 +68,7 @@
         defaultCheckedKeys: () => [] as (string | number)[]
     })
 
+
     // 抽屉标题
     const drawerTitle = computed(() => {
         const obj = {
@@ -91,7 +92,7 @@
     // 权限树数据
     const treeData = computed<BackendMenuItem[]>(() => {
         const data = JSON.parse(JSON.stringify(permissionStore.treeRoutes));
-        if(props.type =='view'){
+        if(props.type =='view' && !props.roleId){
             const viewData = setDisable(data);
             return viewData;
         }
@@ -144,6 +145,14 @@
         })
     }
 
+    // 是否显示确认按钮
+    const allowConfirm = computed(() => {
+        if(props.type ==='view'){
+            return false;
+        }
+        return true;
+    })
+
 // 监听抽屉显示与否变化
 watch(() => drawerVisible.value, async (newVal, oldVal) => {
     await nextTick()
@@ -164,7 +173,7 @@ watch(() => drawerVisible.value, async (newVal, oldVal) => {
         }
     } else if (oldVal && !newVal) {
         // 从打开变为关闭时才清空
-        treeRef.value.setCheckedKeys([])
+        treeRef.value.setCheckedKeys([]);
     }
 })
 

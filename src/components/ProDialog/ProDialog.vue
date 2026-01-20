@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts" setup>
- import type { FormRules, FormInstance } from 'element-plus'
+ import type { FormRules } from 'element-plus'
 import type{formItem} from '@/components/ProForm/ProForm.vue'
 import ProForm from '@/components/ProForm/ProForm.vue'
 
@@ -55,6 +55,8 @@ const dialogVisible = computed({
 })
 
 const submit = async () => {
+    if(!proFormRef.value) return
+    await proFormRef.value.validate();
     emit('submit')
 }
 

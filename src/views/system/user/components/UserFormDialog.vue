@@ -10,7 +10,7 @@
             @submit="submit"
             @cancel="cancel"
             >
-            <template #append>
+            <template #append v-if="props.type === 'create'">
                 <div class="simple-tip">
                      <p>温馨提示：用户创建后默认没有角色，无法访问系统。请在用户列表中使用"分配角色"功能为用户分配权限。建议设置简单初始密码，让用户首次登录时自行修改。</p>
                 </div>
@@ -19,7 +19,7 @@
     </div>
 </template>
 <script setup lang="ts">
-    import {type FormRules,ElMessage, ElStep} from 'element-plus'
+    import {type FormRules,ElMessage} from 'element-plus'
     import type {formItem} from '@/components/ProForm/ProForm.vue'
     import {addUserApi,updateUserListApi} from '@/api/user'
     const dialogFormRef = ref()
@@ -256,8 +256,6 @@
 
     const submit = async () => {
        try {
-            // 验证表单
-            await dialogFormRef.value?.validate?.();
             const submitData = { ...modelForm };
             if (props.type !== 'create') {
                 delete submitData.password;
