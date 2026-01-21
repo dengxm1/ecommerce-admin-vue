@@ -57,7 +57,7 @@
     const props = withDefaults(defineProps<{
         roleId?: number | null,
         modelValue: boolean,
-        type: 'edit' | 'view',
+        type: 'edit' | 'view' | 'userView',
         direction?: DrawerProps['direction'],
         defaultExpandAll?: boolean,
         defaultCheckedKeys?: Array<string | number>
@@ -73,7 +73,8 @@
     const drawerTitle = computed(() => {
         const obj = {
             'edit': '分配权限',
-            'view': '查看权限树'
+            'view': '查看权限树',
+            'userView': '查看用户权限'
         }
         return obj[props.type] || '查看权限树';
     })
@@ -106,7 +107,7 @@
 
     // 确认按钮点击
     const confirmClick = () => {
-        if(props.type ==='view'){
+        if(props.type ==='view' || props.type ==='userView'){
             drawerVisible.value = false;
             return;
         }
@@ -147,7 +148,7 @@
 
     // 是否显示确认按钮
     const allowConfirm = computed(() => {
-        if(props.type ==='view'){
+        if(props.type ==='view' || props.type ==='userView'){
             return false;
         }
         return true;
@@ -158,18 +159,25 @@ watch(() => drawerVisible.value, async (newVal, oldVal) => {
     await nextTick()
     if (!treeRef.value) return
     if (newVal) {
-        // 抽屉打开：如果有角色ID，则加载数据
-        if (props.roleId != null) {
-            try {
-                const res = await getRoleMenuIds(props.roleId); // 获取角色权限菜单ID
-                if (res.data) {
-                    const menuIds = res.data as Array<string | number>;
-                    if(menuIds.length ===0) return;
-                    setTreeCheckedKeys(treeData.value,menuIds);
+        // 根绝角色ID获取已分配权限菜单ID并设置选中状态
+        if(props.type == 'edit' || props.type == 'view'){
+            if (props.roleId != null) {
+                try {
+                    const res = await getRoleMenuIds(props.roleId); // 获取角色权限菜单ID
+                    if (res.data) {
+                        const menuIds = res.data as Array<string | number>;
+                        if(menuIds.length ===0) return;
+                        setTreeCheckedKeys(treeData.value,menuIds);
+                    }
+                } catch (error) {
+                    console.error('获取角色权限菜单ID失败', error)
                 }
-            } catch (error) {
-                console.error('获取角色权限菜单ID失败', error)
             }
+        } else if (props.type == 'userView'){
+            // 用户查看权限
+            // 此时传入的defaultCheckedKeys即为用户权限ids
+            const menuIds = props.defaultCheckedKeys || [];
+            setTreeCheckedKeys(treeData.value, menuIds);
         }
     } else if (oldVal && !newVal) {
         // 从打开变为关闭时才清空

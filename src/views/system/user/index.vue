@@ -189,6 +189,12 @@
                   <template #dropdown>
                     <el-dropdown-menu>
                       <el-dropdown-item 
+                        command="viewPermissions"
+                      >
+                        <el-icon><Lock /></el-icon>
+                        <span>查看权限</span>
+                      </el-dropdown-item>
+                      <el-dropdown-item 
                         command="toggleStatus"
                         :divided="row.isEnabled"
                       >
@@ -241,6 +247,12 @@
       :user-data="resetDialog.userData"
       @success="handleResetSuccess"
     />
+    <!-- 用户权限查看对话框 -->
+    <PermissionDrawer
+      v-model="permissionDrawer.visible"
+      :type="permissionDrawer.type"
+      :default-checked-keys="permissionDrawer.defaultCheckedKeys"
+      ></PermissionDrawer>
   </div>
 </template>
 
@@ -248,12 +260,13 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
-import {getUserListApi,updateUserStatusApi,deleteUserApi} from '@/api/user'
+import {getUserListApi,updateUserStatusApi,deleteUserApi, getUserPermissionIdsApi} from '@/api/user'
 
 // 组件
 import UserFormDialog from './components/UserFormDialog.vue'
 import AssignRoleDialog from './components/AssignRoleDialog.vue'
 import ResetPasswordDialog from './components/ResetPasswordDialog.vue'
+import PermissionDrawer from '../components/PermissionDrawer/PermissionDrawer.vue'
 
 
 // 图标
@@ -454,14 +467,12 @@ const resetDialog = reactive({
   userData: null as any
 })
 
-// 角色选项（模拟数据）
-const roleOptions = ref([
-  { id: 1, name: '超级管理员' },
-  { id: 2, name: '系统管理员' },
-  { id: 3, name: '商品专员' },
-  { id: 4, name: '订单客服' },
-  { id: 5, name: '财务人员' }
-])
+const permissionDrawer = reactive({
+  visible: false,
+  type:'userView' as 'view' | 'userView' | 'edit',
+  defaultCheckedKeys:  [] as (string | number)[]
+})
+
 
 
 // 计算属性
@@ -562,6 +573,13 @@ const handleResetPassword = (row: any) => {
 
 const handleMoreCommand = (command: string, row: any) => {
   switch (command) {
+    case 'viewPermissions':
+      getUserPermissionIdsApi(row.id).then( res=>{
+        const permissionIds = res.data || [];
+        permissionDrawer.defaultCheckedKeys = permissionIds;
+        permissionDrawer.visible = true;
+      })
+      break
     case 'toggleStatus':
       toggleUserStatus(row)
       break

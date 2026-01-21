@@ -63,3 +63,11 @@ export function assignUserRoleApi(data: {userId: number, roleIds: number[]}) :Pr
     data
   })
 }
+
+// 获取用户权限id
+export function getUserPermissionIdsApi(userId: number|string) :Promise<BaseResponse>{
+  return request<BaseResponse>({
+    url: `/sys/user/menuIds/${userId}`,
+    method: 'get'
+  })
+}
