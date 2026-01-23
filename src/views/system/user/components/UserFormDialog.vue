@@ -1,6 +1,6 @@
 <template>
     <div>
-        <ProDialog 
+        <ProFormDialog 
             ref="dialogFormRef"
             v-model="dialogVisible" 
             :title="dialogTitle" 
@@ -15,7 +15,7 @@
                      <p>温馨提示：用户创建后默认没有角色，无法访问系统。请在用户列表中使用"分配角色"功能为用户分配权限。建议设置简单初始密码，让用户首次登录时自行修改。</p>
                 </div>
             </template>
-        </ProDialog>
+        </ProFormDialog>
     </div>
 </template>
 <script setup lang="ts">
@@ -81,12 +81,18 @@
         {
             label: "密码",
             prop: "password",
-            type: "password"
+            type: "password",
+            inputParse: (value: string) => {
+                return value.replace(/[^A-Za-z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g, '');
+            }
         },
         {
             label: "确认密码",
             prop: "confirmPassword",
-            type: "password"
+            type: "password",
+            inputParse: (value: string) => {
+            return value.replace(/[^A-Za-z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g, '');
+        }
         },
         {
             label: "昵称",
@@ -142,7 +148,7 @@
     const baseRules = reactive<FormRules<RuleForm>>({
         username:[
             { required: true, message: '请输入用户名' },
-            { min: 3, max: 8, message: '用户名长度必须在3-8个字符以内'}
+            { max: 8, message: '用户名长度必须在8个字符以内'}
         ],
         password:[
             {  required: true,message: '请输入密码'},

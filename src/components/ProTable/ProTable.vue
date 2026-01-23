@@ -66,6 +66,7 @@
                   :layout="layout"
                   :total="total"
                   :background="background"
+                  @change="paginationChange"
                 />
               </div>
         </el-card>
@@ -134,7 +135,8 @@
 const emit = defineEmits<{
     'handleSelectionChange': [newSelection: any[]],
     'update:currentPage': [current: number],
-    'update:pageSize': [size: number]
+    'update:pageSize': [size: number],
+    'paginationChange': []
 }>()
 
 // 当前页
@@ -154,9 +156,11 @@ const handleSelectionChange = (newSelection: any[]) => {
     emit('handleSelectionChange',newSelection)
 }
 
-watch(() => props.loading, (newVal) => {
-  console.log('ProTable loading 状态变化:', newVal)
-})
+// 当前页或每页显示条目数变化时触发
+const paginationChange = () => {
+   emit('paginationChange')
+}
+
 
 </script>
 <style scoped lang="scss">

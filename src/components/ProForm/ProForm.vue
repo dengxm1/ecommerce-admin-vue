@@ -19,6 +19,10 @@
                         :show-password="item.type == 'password'"
                         :disabled="item.disabled"
                         :maxlength="item.maxlength"
+                        :style="item.style"
+                        @input="item.inputParse ? modelForm[item.prop] = item.inputParse($event) : null"
+                        @keydown.enter="item.keyEnter && item.keyEnter($event)"
+                        @clear="item.clear"
                     >
                        <template v-if="item.append" #append>
                             {{ item.append }}
@@ -33,6 +37,7 @@
                         :clearable="item.clearable"
                         :style="item.style"
                         :disabled="item.disabled"
+                        @clear="item.clear"
                         />
                     <el-switch v-if="item.type == 'switch'" v-model="modelForm[item.prop]" :disabled="item.disabled"/>
                     <el-date-picker
@@ -45,6 +50,7 @@
                         value-format="YYYY-MM-DD"
                         :style="item.style"
                         :disabled="item.disabled"
+                        @clear="item.clear"
                     />
                 <el-radio-group v-if="item.type == 'radio'" v-model="modelForm[item.prop]" :disabled="item.disabled">
                     <el-radio v-for="list in item.options" :value="list.value">{{ list.label }}</el-radio>
@@ -85,7 +91,10 @@
         itemColStyle?: string | CSSProperties,
         disabled?: boolean,
         maxlength?: number | string,
-        minlength?: number | string
+        minlength?: number | string,
+        inputParse?: (value: string) => string,
+        keyEnter?: (event: KeyboardEvent | Event) => void,
+        clear?: () => void
     }
     const props = defineProps<{
         labelPosition?: 'left' | 'right' | 'top',
@@ -94,7 +103,7 @@
         rules?: FormRules,
         formItemList: formItem[],
         inline?: boolean,
-        showAction?: boolean
+        showAction?: boolean,
     }>()
 
     const getItemStyle= (itemColStyle?:string | CSSProperties) => {

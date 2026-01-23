@@ -135,6 +135,7 @@
 
     // 递归设置树节点选中状态
     const setTreeCheckedKeys = (treeList: BackendMenuItem[], menuIds: Array<string | number>) => {
+        console.log('递归设置树节点选中状态')
         treeList.forEach(tree => {
             if(!tree.children || tree.children.length ===0){
                 if(menuIds.includes(tree.id)){

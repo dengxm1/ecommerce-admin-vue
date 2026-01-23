@@ -18,26 +18,8 @@
               >
                 重置
               </el-button>
-              <el-button 
-              type="primary"
-                link
-                @click="toggleAdvancedSearch"
-                class="advanced-btn"
-              >
-                {{ showAdvanced ? '收起' : '高级筛选' }}
-                <el-icon :class="{ 'rotate-icon': showAdvanced }">
-                  <ArrowDown />
-                </el-icon>
-              </el-button>
         </template>
       </ProForm>
-        <!-- 高级筛选（可折叠） -->
-        <el-collapse-transition>
-          <div v-show="showAdvanced" class="advanced-search">
-            <el-divider />
-            <ProForm ref="advancedFormRef" :modelForm="searchForm" :formItemList="advancedFormList" inline></ProForm>
-          </div>
-        </el-collapse-transition>
       </el-card>
     </div>
 
@@ -52,6 +34,7 @@
           showSelection
           showAction
           stripe
+          @paginationChange="paginationChange"
           >
             <template #table-header>
                 <div class="table-actions">
@@ -127,7 +110,7 @@
                   v-for="role in row.roles"
                   :key="role.roleId"
                   size="small"
-                  :type="getRoleTagType(role.roleName)"
+                  type="primary"
                   class="role-tag"
                 >
                   {{ role.roleName }}
@@ -274,7 +257,6 @@ import {
   Plus,
   Search,
   Refresh,
-  ArrowDown,
   Delete,
   Download,
   RefreshRight,
@@ -289,44 +271,55 @@ import {
   View
 } from '@element-plus/icons-vue'
 import {type TableColumn} from '@/components/ProTable/ProTable.vue'
+import {useRoleStore, type Role} from '@/stores/role'
+
+const roleStore = useRoleStore();
 
 // 搜索表单
 const searchForm = reactive({
   keyword: '',
-  status: '',
+  isEnabled: '',
   roleId: '',
   dateRange: [],
   email: '',
-  phone: '',
-  lastLogin: []
+  phone: ''
 })
 
-const searchFormList = ref([
+const searchFormList = computed(() => [
   {
     type:'input',
     label:'关键词',
     prop:'keyword',
-    placeholder:'用户名/昵称/邮箱',
+    placeholder:'用户名/昵称/邮箱/手机号',
     clearable: true,
-    style:'width: 200px'
+    style:'width: 200px',
+    keyEnter: () => {
+      fetchUserList()
+    },
+    clear: () => {
+      fetchUserList()
+    }
   },
   {
     type:'select',
     label:'状态',
-    prop:'status',
+    prop:'isEnabled',
     placeholder:'全部状态',
     clearable: true,
     style:'width: 120px',
     options:[
       {
-        id: 'enabled',
+        id: 1,
         label:'启用'
       },
        {
-        id: 'disabled',
+        id: 0,
         label:'禁用'
       }
-    ]
+    ],
+    clear: () => {
+      fetchUserList()
+    }
   },
   {
     type:'select',
@@ -339,52 +332,23 @@ const searchFormList = ref([
       value:'id',
       label:'name'
     },
-    options:[
-      { id: 1, name: '超级管理员' },
-      { id: 2, name: '系统管理员' },
-      { id: 3, name: '商品专员' },
-      { id: 4, name: '订单客服' },
-      { id: 5, name: '财务人员' }
-    ]
+    options: roleStore.roleList as Role[],
+    clear: () => {
+      fetchUserList()
+    }
   },
     {
     type:'dateRange',
     label:'创建时间',
     prop:'dateRange',
     style:'width: 240px',
+    clear: () => {
+      fetchUserList()
+    }
   }
 ])
 
-const advancedFormList = ref([
-  {
-    type:'input',
-    label:'邮箱',
-    prop:'email',
-    placeholder:'邮箱地址',
-    clearable: true,
-    style:'width: 200px'
-  },
-   {
-    type:'input',
-    label:'手机号',
-    prop:'phone',
-    placeholder:'手机号码',
-    clearable: true,
-    style:'width: 200px'
-  },
-     {
-    type:'dateRange',
-    label:'最后登录',
-    prop:'lastLogin',
-    clearable: true,
-    style:'width: 240px'
-  },
-])
-
-
 const searchFormRef = ref()
-const advancedFormRef = ref()
-const showAdvanced = ref(false)
 const tableData = ref<any[]>([])
 
 const columns = ref<TableColumn[]>([
@@ -478,20 +442,26 @@ const permissionDrawer = reactive({
 // 计算属性
 const selectedCount = computed(() => selectedRows.value.length)
 
-// 方法
-const toggleAdvancedSearch = () => {
-  showAdvanced.value = !showAdvanced.value
-}
 
+// 搜索
 const handleSearch = () => {
-  pagination.current = 1
+  pagination.current = 1;
+  pagination.size = 10;
+  pagination.total = 0;
   fetchUserList()
 }
 
+// 重置
 const handleReset = () => {
   searchFormRef.value?.resetFields()
-  advancedFormRef.value?.resetFields()
-  pagination.current = 1
+  pagination.current = 1;
+  pagination.size = 10;
+  pagination.total = 0;
+  fetchUserList()
+}
+
+// 当前页或每页显示条目数变化时触发
+const paginationChange = () => {
   fetchUserList()
 }
 
@@ -499,10 +469,10 @@ const handleReset = () => {
 const fetchUserList = async () => {
   loading.value = true
   try {
-    let params = {
+  let params = Object.assign({
       pageNum: pagination.current,
       pageSize: pagination.size
-    }
+    }, searchForm)
   const res =  await getUserListApi(params);
    if(res.data){
       tableData.value = res.data.list;
@@ -701,16 +671,6 @@ const formatTime = (time: string, format: string = 'YYYY-MM-DD HH:mm') => {
   return dayjs(time).format(format)
 }
 
-const getRoleTagType = (roleName: string): 'success' | 'danger' | 'primary' | 'warning' | 'info' => {
-  const typeMap: Record<string, 'success' | 'danger' | 'primary' | 'warning' | 'info'> = {
-    '租户超级管理员': 'danger',
-    '系统管理员': 'warning',
-    '商品专员': 'success',
-    '订单客服': 'info',
-    '财务人员': 'primary'
-  }
-  return typeMap[roleName] || 'primary'
-}
 
 // 初始化
 onMounted(() => {

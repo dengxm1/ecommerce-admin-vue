@@ -34,15 +34,13 @@
           :total="pagination.total"
           actionWidth="240"
           :loading="loading"
+          @paginationChange="paginationChange"
           >
             <template #table-header>
                 <div class="table-actions">
                     <div class="actions-left">
-                      <span class="role-count" v-if="roleStatistics.total > 0">
-                        共 {{ roleStatistics.total }} 个角色
-                        <template v-if="roleStatistics.custom > 0">
-                          ({{ roleStatistics.custom }} 个自定义角色)
-                        </template>
+                      <span class="role-count" v-if="pagination.total > 0">
+                        共 {{ pagination.total }} 个角色
                       </span>
                     </div>
                     <div class="actions-right">
@@ -218,9 +216,7 @@ import { type TableColumn } from '@/components/ProTable/ProTable.vue'
 const loading = ref(false)
 // 搜索表单
 const searchForm = reactive({
-  keyword: '',
-  status: '',
-  isSystem: ''
+  keyword: ''
 })
 
 const searchFormList = ref([
@@ -230,25 +226,13 @@ const searchFormList = ref([
     prop:'keyword',
     placeholder:'角色名称/编码',
     clearable: true,
-    style:'width: 200px'
-  },
-  {
-    type:'select',
-    label:'状态',
-    prop:'status',
-    placeholder:'全部状态',
-    clearable: true,
-    style:'width: 100px',
-    options:[
-      {
-        value: '1',
-        label:'启用'
-      },
-      {
-        value: '0',
-        label:'禁用'
-      }
-    ]
+    style:'width: 200px',
+    keyDown: () => {
+      fetchRoleList()
+    },
+    clear: () => {
+      fetchRoleList()
+    }
   }
 ])
 
@@ -313,18 +297,9 @@ const columns = ref<TableColumn[]>([
 const pagination = reactive({
   current: 1,
   size: 10,
-  total: 0,
-  totalPage: 0
+  total: 0
 })
 
-// 统计信息
-const roleStatistics = reactive({
-  total: 0,
-  enabled: 0,
-  disabled: 0,
-  system: 0,
-  custom: 0
-})
 
 // 对话框状态
 const dialog = reactive({
@@ -339,15 +314,25 @@ const permissionDrawer = reactive({
   roleId: null as number | null
 })
 
-// 方法
+// 搜索
 const handleSearch = () => {
-  pagination.current = 1
+  pagination.current = 1;
+  pagination.size = 10;
+  pagination.total = 0;
   fetchRoleList()
 }
 
+// 重置
 const handleReset = () => {
   searchFormRef.value?.resetFields()
-  pagination.current = 1
+  pagination.current = 1;
+  pagination.size = 10;
+  pagination.total = 0;
+  fetchRoleList()
+}
+
+// 当前页或每页显示条目数变化时触发
+const paginationChange = () => {
   fetchRoleList()
 }
 
@@ -355,14 +340,13 @@ const handleReset = () => {
 const fetchRoleList = async () => {
   loading.value = true
   try{
-    let params = {
+    let params = Object.assign({
       pageNum: pagination.current,
       pageSize: pagination.size
-    }
+    }, searchForm)
     const res =  await getRoleListApi(params);
     tableData.value = res.data.list || [];
     pagination.total = res.data.total;
-    pagination.totalPage = res.data.totalPages;
   }catch(error){
     ElMessage.error('获取用户列表失败')
     console.error(error)

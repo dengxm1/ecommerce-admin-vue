@@ -12,7 +12,7 @@
               <div class="table-actions">
                 <div class="actions-left">
                   <span class="menu-statistics">
-                    共 {{ menuStatistics.total }} 个菜单项
+                    统计信息
                     <el-tag size="small" type="info" class="stat-tag">
                       目录: {{ menuStatistics.directory }}
                     </el-tag>
@@ -125,14 +125,26 @@ const columns = ref<TableColumn[]>([
 
 
 // 统计信息
-const menuStatistics = reactive({
-  total: 0,
-  directory: 0,
-  menu: 0,
-  button: 0,
-  visible: 0,
-  hidden: 0
-})
+const menuStatistics = computed(() => {
+  const stats = {
+    directory: 0,
+    menu: 0,
+    button: 0,
+  };
+  
+  const countTypes = (items: any[]) => {
+    items.forEach(item => {
+      if (item.type === 1) stats.directory += 1;
+      else if (item.type === 2) stats.menu += 1;
+      else if (item.type === 3) stats.button += 1;
+      if (item.children && item.children.length > 0) {
+        countTypes(item.children);
+      }
+    });
+  };
+  countTypes(permissionStore.treeRoutes);
+  return stats;
+});
 
 
 const permissionDrawer = reactive({

@@ -1,5 +1,5 @@
 <template>
-    <ProDialog
+    <ProFormDialog
         ref="dialogFormRef"
         v-model="dialogVisible" 
         :title="dialogTitle" 
@@ -8,7 +8,7 @@
         :rules="rules"
         @submit="submit"
     >
-    </ProDialog>
+    </ProFormDialog>
 </template>
 <script setup lang="ts">
     import {type FormRules, ElMessage} from 'element-plus'

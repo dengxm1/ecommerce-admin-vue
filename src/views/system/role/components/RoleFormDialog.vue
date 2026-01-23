@@ -1,6 +1,6 @@
 <template>
     <div>
-        <ProDialog 
+        <ProFormDialog 
             ref="dialogFormRef"
             v-model="dialogVisible" 
             :title="dialogTitle" 
@@ -10,7 +10,7 @@
             @submit="submit"
             @cancel="cancel"
             >
-        </ProDialog>
+        </ProFormDialog>
     </div>
 </template>
 <script setup lang="ts">
