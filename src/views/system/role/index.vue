@@ -423,9 +423,11 @@ const handleMoreCommand = (command: string, row: any) => {
   }
 }
 
+// 查看权限详情
 const viewPermissionDetail = (row: any) => {
-  ElMessage.info(`查看角色 "${row.name}" 的权限详情`)
-  // 可以打开一个对话框展示具体的权限列表
+   permissionDrawer.visible = true;
+    permissionDrawer.type = 'view';
+    permissionDrawer.roleId = row.id;
 }
 
 const deleteSingleRole = async (row: any) => {
