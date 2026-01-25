@@ -126,7 +126,7 @@
                     {{ formatTime(row.createdAt) }}
                   </div>
                   <div class="last-login" v-if="row.lastLoginTime">
-                    最后登录：{{ formatTime(row.lastLoginTime, 'MM-DD HH:mm') }}
+                    最后登录：{{ formatTime(row.lastLoginTime) }}
                   </div>
               </div>
             </template>
@@ -280,9 +280,7 @@ const searchForm = reactive({
   keyword: '',
   isEnabled: '',
   roleId: '',
-  dateRange: [],
-  email: '',
-  phone: ''
+  dateRange: []
 })
 
 const searchFormList = computed(() => [

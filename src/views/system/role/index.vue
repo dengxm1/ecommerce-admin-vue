@@ -82,6 +82,7 @@
                   type="primary" 
                   size="small"
                   link
+                  @click="viewLinkUsers(row)"
                 >
                   查看
                 </el-button>
@@ -178,6 +179,11 @@
         :roleId="permissionDrawer.roleId"
         @confirm="handleDialogSuccess"
       />
+    <!-- 关联用户对话框 -->
+    <LinkUserDialog
+      v-model="linkUserDialog.visible"
+      :roleId="linkUserDialog.roleId" 
+    />
   </div>
 </template>
 
@@ -188,6 +194,7 @@ import dayjs from 'dayjs'
 import {getRoleListApi,deleteRoleApi} from '@/api/role'
 import RoleFormDialog from './components/RoleFormDialog.vue'
 import PermissionDrawer from '../components/PermissionDrawer/PermissionDrawer.vue'
+import LinkUserDialog from './components/LinkUserDialog.vue'
 
 // 图标
 import {
@@ -214,6 +221,7 @@ import { type TableColumn } from '@/components/ProTable/ProTable.vue'
 
 
 const loading = ref(false)
+
 // 搜索表单
 const searchForm = reactive({
   keyword: ''
@@ -313,6 +321,18 @@ const permissionDrawer = reactive({
   type:'view' as 'edit' | 'view',
   roleId: null as number | null
 })
+
+// 关联用户对话框状态
+const linkUserDialog = reactive({
+  visible: false,
+  roleId: null as number | null
+})
+
+// 查看角色关联的用户
+const viewLinkUsers = (row: any) => {
+  linkUserDialog.roleId = row.id;
+  linkUserDialog.visible = true;
+}
 
 // 搜索
 const handleSearch = () => {
