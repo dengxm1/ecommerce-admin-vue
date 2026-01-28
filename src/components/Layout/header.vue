@@ -16,17 +16,6 @@
                 </el-breadcrumb-item>
             </el-breadcrumb>
         </div>
-        
-        <!-- 中间：快捷操作 -->
-        <div class="header-center">
-            <el-button type="primary" :icon="Plus" class="quick-action" @click="handleCreate">
-                新建商品
-            </el-button>
-            <el-button :icon="Promotion" class="quick-action" @click="handlePromotion">
-                创建促销
-            </el-button>
-        </div>
-        
         <!-- 右侧：工具和用户 -->
         <div class="header-right">
             <!-- 消息通知 -->
@@ -80,14 +69,10 @@
                     </div>
                 </div>
                 <template #dropdown>
-                    <el-dropdown-menu>
+                    <el-dropdown-menu @click="goToProfile">
                         <el-dropdown-item>
                             <el-icon><User /></el-icon>
                             个人中心
-                        </el-dropdown-item>
-                        <el-dropdown-item>
-                            <el-icon><Setting /></el-icon>
-                            账户设置
                         </el-dropdown-item>
                         <el-dropdown-item divided>
                             <el-icon><SwitchButton /></el-icon>
@@ -109,16 +94,13 @@ import { useRoute } from 'vue-router';
 // Element Plus 图标
 import {
     House,
-    Plus,
-    Promotion,
     Bell,
     CircleCheck,
     Warning,
     FullScreen,
     Moon,
     ArrowDown,
-    User as UserIcon,
-    Setting as SettingIcon,
+    User,
     SwitchButton,
     Histogram,
     Goods,
@@ -126,7 +108,7 @@ import {
 } from '@element-plus/icons-vue';
 
 const route = useRoute();
-console.log('routeroute===',route)
+const router = useRouter();
 const userAvatar = ref('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png');
 
 // 模拟当前页面信息
@@ -144,6 +126,11 @@ const breadcrumbs = computed(() => {
         item.charAt(0).toUpperCase() + item.slice(1)
     );
 });
+
+// 新增：路由跳转方法
+const goToProfile = () => {
+  router.push({ path: '/profile' })
+}
 
 // 方法
 const handleCreate = () => {
@@ -249,38 +236,6 @@ const toggleTheme = () => {
                     color: var(--ecommerce-primary);
                     font-weight: 500;
                 }
-            }
-        }
-    }
-}
-
-.header-center {
-    display: flex;
-    gap: 12px;
-    
-    .quick-action {
-        background: linear-gradient(135deg, var(--ecommerce-primary), #ff8c5a);
-        border: none;
-        border-radius: 20px;
-        padding: 8px 20px;
-        height: 36px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        
-        &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
-        }
-        
-        &.el-button--default {
-            background: white;
-            border: 1px solid var(--ecommerce-secondary);
-            color: var(--ecommerce-secondary);
-            
-            &:hover {
-                background: var(--ecommerce-secondary);
-                color: white;
-                border-color: var(--ecommerce-secondary);
             }
         }
     }

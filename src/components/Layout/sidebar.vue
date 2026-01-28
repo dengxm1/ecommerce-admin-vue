@@ -55,15 +55,7 @@
 import {usePermissionStore} from '@/stores/permission'
 import type {FrontendRoute} from '@/utils/routeUtils'
 // Element Plus 图标
-import {
-    Histogram,
-    Goods,
-    Tickets,
-    Promotion,
-    User,
-    OfficeBuilding,
-    Setting
-} from '@element-plus/icons-vue';
+import { Histogram, Goods} from '@element-plus/icons-vue';
 
 const route = useRoute();
 const activeMenu = ref(route.path);
@@ -77,9 +69,7 @@ const sidebarList = computed(() => {
             title: '概览',
             hidden: false,
         },
-        component: () => import('@/views/dashboard/index.vue')
         }
-        console.log('.permissionStore.sidebarRoutes==',permissionStore.sidebarRoutes)
     return [dashboard,...permissionStore.sidebarRoutes]
 })
 

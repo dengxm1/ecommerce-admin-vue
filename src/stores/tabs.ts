@@ -1,19 +1,20 @@
 import { defineStore } from 'pinia'
 import type { TabItem } from '@/types/tabs'
-
 export const useTabsStore = defineStore('tabs', ()=> {
-    const tabs = ref<TabItem[]>([{
-        path: '/dashboard',
-        name:'dashboard',
-        fullPath: '/dashboard',
-        query: {},
-        params: {},
-        closable: false,
-        meta: {
-            title: '概览',
-            hidden:false
-        }
-    }]);
+    const tabs = ref<TabItem[]>([
+            {
+                path: '/dashboard',
+                name:'dashboard',
+                fullPath: '/dashboard',
+                query: {},
+                params: {},
+                closable: false,
+                meta: {
+                    title: '概览',
+                    hidden:false
+                }
+            }
+        ]);
     const activeTab = ref('/dashboard');
     const currentTab = computed(() => {
         return tabs.value.find(tab =>  tab.path == activeTab.value)
