@@ -49,10 +49,18 @@ export const setupPermissionGuard = (router: Router) => {
     
       return true
     }else{
+      userStore.clearUserInfo()
       if (!whiteList.includes(to.path)) {
-          return {path: `/login?redirect=${to.path}`}
-      }
+        console.log('fsdkhfksdhfksdhf',to)
+            return {
+              path: '/login',
+              query: { redirect: to.fullPath },
+              replace: true
+            }
+      }else{
        return true
+      }
+     
     }
   })
 

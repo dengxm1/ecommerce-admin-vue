@@ -4,9 +4,8 @@ import {getUserInfo,login as loginApi} from '@/api/auth'
 import type{ loginParams} from '@/types/apiType'
 import { ElMessage } from 'element-plus'
 
-
 export const useUserStore = defineStore('user',()=>{
-
+    const router = useRouter()
     const userInfo = ref()
      const userLoaded = ref(false) // 用户信息加载状态
 
@@ -15,7 +14,6 @@ export const useUserStore = defineStore('user',()=>{
        try{
             const res = await loginApi(data)
             localStorage.setItem("access-token",res.token)
-            await fetchUserInfo()
             return res
        }catch(error){
             throw error
@@ -46,11 +44,11 @@ export const useUserStore = defineStore('user',()=>{
     const logout = () => {
         localStorage.removeItem("access-token");
         clearUserInfo();
+        router.push({path:'/login',replace: true})
           ElMessage({
             message: '退出登录成功',
             duration: 3 * 1000,
         })
-        window.location.href="/"
     }
     return {
         userInfo,

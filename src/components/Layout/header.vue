@@ -69,12 +69,12 @@
                     </div>
                 </div>
                 <template #dropdown>
-                    <el-dropdown-menu @click="goToProfile">
-                        <el-dropdown-item>
+                    <el-dropdown-menu>
+                        <el-dropdown-item @click="goToProfile">
                             <el-icon><User /></el-icon>
                             个人中心
                         </el-dropdown-item>
-                        <el-dropdown-item divided>
+                        <el-dropdown-item divided @click="logout">
                             <el-icon><SwitchButton /></el-icon>
                             退出登录
                         </el-dropdown-item>
@@ -89,7 +89,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useUserStore } from '@/stores/user';
 
 // Element Plus 图标
 import {
@@ -110,6 +110,8 @@ import {
 const route = useRoute();
 const router = useRouter();
 const userAvatar = ref('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png');
+
+const userStore = useUserStore();
 
 // 模拟当前页面信息
 const currentPage = computed(() => {
@@ -132,14 +134,10 @@ const goToProfile = () => {
   router.push({ path: '/profile' })
 }
 
-// 方法
-const handleCreate = () => {
-    console.log('创建商品');
-};
-
-const handlePromotion = () => {
-    console.log('创建促销');
-};
+// 退出登录
+const logout = () => {
+    userStore.logout()
+}
 
 const toggleFullscreen = () => {
     console.log('切换全屏');

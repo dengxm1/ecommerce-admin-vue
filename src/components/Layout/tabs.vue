@@ -73,30 +73,30 @@ const handleTabRemove = (tabPath: any) => {
 }
 
 // 初始化
-onMounted(() => {
-  // 监听页面刷新，恢复标签状态
-  window.addEventListener('beforeunload', () => {
-    localStorage.setItem('tabs_backup', JSON.stringify(tabsStore.tabs))
-  })
+// onMounted(() => {
+//   // 监听页面刷新，恢复标签状态
+//   window.addEventListener('beforeunload', () => {
+//     localStorage.setItem('tabs_backup', JSON.stringify(tabsStore.tabs))
+//   })
   
-  // 尝试恢复标签状态
-  const backup = localStorage.getItem('tabs_backup')
-  if (backup) {
-    try {
-      const parsed = JSON.parse(backup)
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        // 恢复除了当前页面之外的标签
-        parsed.forEach((tab: any) => {
-          if (tab.path !== route.path) {
-            tabsStore.addTab(tab)
-          }
-        })
-      }
-    } catch (e) {
-      console.error('恢复标签状态失败:', e)
-    }
-  }
-})
+//   // 尝试恢复标签状态
+//   const backup = localStorage.getItem('tabs_backup')
+//   if (backup) {
+//     try {
+//       const parsed = JSON.parse(backup)
+//       if (Array.isArray(parsed) && parsed.length > 0) {
+//         // 恢复除了当前页面之外的标签
+//         parsed.forEach((tab: any) => {
+//           if (tab.path !== route.path) {
+//             tabsStore.addTab(tab)
+//           }
+//         })
+//       }
+//     } catch (e) {
+//       console.error('恢复标签状态失败:', e)
+//     }
+//   }
+// })
 </script>
 
 <style scoped lang="scss">

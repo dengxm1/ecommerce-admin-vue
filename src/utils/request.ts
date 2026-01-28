@@ -3,7 +3,6 @@ import type { AxiosRequestConfig } from 'axios'
 import { ElMessage } from 'element-plus'
 import type {BaseResponse} from '@/types/apiType'
 
-
 // 创建 axios 实例
 const service = axios.create({
   baseURL: import.meta.env.VITE_APP_BASE_API, // 从环境变量读取API地址
@@ -55,7 +54,6 @@ service.interceptors.response.use(
     const status = error.response.status
     if (status === 401) {
       localStorage.removeItem('access-token')
-      window.location.href = '/login'
     }
     ElMessage({
       message,

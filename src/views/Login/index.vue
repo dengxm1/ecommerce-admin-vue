@@ -130,7 +130,15 @@ import { useUserStore } from '@/stores/user'
 
 // 路由实例
 const router = useRouter()
+const route = useRoute()
 
+const redirect = route.query.redirect as string
+const otherQuery = Object.keys(route.query)
+  .filter(key => key !== 'redirect')
+  .reduce((obj, key) => {
+    obj[key] = route.query[key]
+    return obj
+  }, {} as Record<string, any>)
 // Pinia Store
 const userStore = useUserStore()
 
@@ -189,9 +197,16 @@ const handleLogin = async () => {
 
     // 登录成功提示
     ElMessage.success('登录成功')
-    console.log('222222222222222222')
-    // 跳转到首页
-    router.push('/')
+    // 如果有 redirect 参数，跳转到指定页面
+    if (redirect) {
+      await router.push({
+        path: redirect,
+        query: otherQuery
+      })
+    } else {
+      // 否则跳转到首页
+      await router.push('/')
+    }
   } catch (error: any) {
   } finally {
     loading.value = false

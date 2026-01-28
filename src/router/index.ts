@@ -38,7 +38,7 @@ const router = createRouter({
       meta: {
         title: '登录',
         hidden: true,      // 不在侧边栏显示
-        noAuth: true,     // 不需要权限验证
+        noAuth: true,
       }
     },
     {

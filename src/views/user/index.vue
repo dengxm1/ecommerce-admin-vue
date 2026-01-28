@@ -5,7 +5,7 @@
       <div class="user-header">
         <el-avatar :size="80" :src="userInfo.avatar || userAvatar" />
         <div class="user-info">
-          <h2>{{ userInfo.nickname || userInfo.username }}</h2>
+          <h2>{{ userInfo.username }}</h2>
           <p class="user-role">{{ userInfo.roleNames }}</p>
           <p class="user-email">{{ userInfo.email }}</p>
         </div>

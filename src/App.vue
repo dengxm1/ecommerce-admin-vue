@@ -7,7 +7,10 @@
   const roleStore = useRoleStore();
   // 获取所有角色列表
   onMounted(() => {
-    roleStore.fetchAllRoles();
+     const hasToken = localStorage.getItem("access-token")
+     if(hasToken){
+        roleStore.fetchAllRoles();
+     }
   });
 </script>
 
