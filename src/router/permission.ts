@@ -51,7 +51,6 @@ export const setupPermissionGuard = (router: Router) => {
     }else{
       userStore.clearUserInfo()
       if (!whiteList.includes(to.path)) {
-        console.log('fsdkhfksdhfksdhf',to)
             return {
               path: '/login',
               query: { redirect: to.fullPath },
