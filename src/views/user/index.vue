@@ -5,7 +5,7 @@
       <div class="user-header">
         <el-avatar :size="80" :src="userInfo.avatar || userAvatar" />
         <div class="user-info">
-          <h2>{{ userInfo.username }}</h2>
+          <h2>{{userInfo.nickname || userInfo.username }}</h2>
           <p class="user-role">{{ userInfo.roleNames }}</p>
           <p class="user-email">{{ userInfo.email }}</p>
         </div>
@@ -22,13 +22,21 @@
         </el-tab-pane>
       </el-tabs>
     </el-card>
+
+    <!-- 编辑个人资料弹窗 -->
+    <EditBaseInfo 
+      v-model="editInfoDialog.visible"
+      :data="editInfoDialog.data"
+      ></EditBaseInfo>
+    
   </div>
 </template>
 
 <script setup lang="ts">
 import { EditPen } from '@element-plus/icons-vue'
-import profile from './components/Profile/Profile.vue'
+import profile from './components/Profile.vue'
 import {useUserStore} from '@/stores/user'
+import EditBaseInfo from './components/EditBaseInfo.vue'
 
 
 const userStore = useUserStore()
@@ -37,13 +45,18 @@ const userInfo = computed(() => userStore.userInfo)
 
 const userAvatar = ref('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png');
 
+const editInfoDialog = reactive({
+    visible: false,
+    data: null as any
+})
+
 
 // 当前激活的标签页
 const activeTab = ref('profile')
 
 const editProfile = () => {
-  // 编辑资料逻辑
-  console.log('编辑资料')
+  editInfoDialog.visible = true;
+  editInfoDialog.data = userInfo.value
 }
 </script>
 

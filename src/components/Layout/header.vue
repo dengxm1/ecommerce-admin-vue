@@ -64,7 +64,7 @@
                 <div class="user-avatar">
                     <el-avatar :size="36" :src="userAvatar" />
                     <div class="user-info">
-                        <span class="username">管理员</span>
+                        <span class="username">{{ userInfo.nickname }}</span>
                         <el-icon><ArrowDown /></el-icon>
                     </div>
                 </div>
@@ -112,6 +112,8 @@ const router = useRouter();
 const userAvatar = ref('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png');
 
 const userStore = useUserStore();
+
+const userInfo = computed(() => userStore.userInfo)
 
 // 模拟当前页面信息
 const currentPage = computed(() => {

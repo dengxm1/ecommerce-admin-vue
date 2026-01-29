@@ -51,6 +51,7 @@ export const useUserStore = defineStore('user',()=>{
         })
     }
     return {
+        userLoaded,
         userInfo,
         logout,
         login,

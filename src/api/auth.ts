@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-import type{ loginParams, loginResponse} from '@/types/apiType'
+import type{ loginParams, loginResponse,BaseResponse} from '@/types/apiType'
 
 // 登录
 export function login(data:loginParams) :Promise<loginResponse>{
@@ -29,5 +29,32 @@ export function getPermissionsListApi() {
   return request({
     url: '/system/auth/getUserPermissions',
     method: 'get'
+  })
+}
+
+// 修改个人信息
+export function updatePersonalInfoApi(data: {email?: string, nickname?: string}): Promise<BaseResponse> {
+  return request({
+    url: '/system/auth/updatePersonalInfo',
+    method: 'post',
+    data
+  })
+}
+
+// 修改个人密码
+export function updatePersonalPasswordApi(data: {oldPassword: string, password: string}): Promise<BaseResponse> {
+  return request({
+    url: '/system/auth/updatePersonalPassword',
+    method: 'post',
+    data
+  })
+}
+
+// 绑定或更换个人手机号
+export function bindPersonalPhoneApi(data: {phone: string}): Promise<BaseResponse> {
+  return request({
+    url: '/system/auth/bindPersonalPhone',
+    method: 'post',
+    data
   })
 }

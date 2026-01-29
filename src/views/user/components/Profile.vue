@@ -35,7 +35,7 @@
               <h4>登录密码</h4>
               <p>已设置。建议定期更换密码</p>
             </div>
-            <el-button link type="primary">修改</el-button>
+            <el-button link type="primary" @click="changePassword">修改</el-button>
           </div>
           
           <div class="security-item">
@@ -44,11 +44,21 @@
               <p v-if="userInfo.phone">已绑定手机：{{ maskPhone(userInfo.phone) }}</p>
               <p v-else>未绑定手机，请尽快绑定以保障账户安全</p>
             </div>
-            <el-button link type="primary">更换</el-button>
+            <el-button link type="primary" @click="changePhone">更换</el-button>
           </div>
         </div>
       </el-card>
     </div>
+    <!-- 修改个人密码 -->
+    <ChangePerPassDialog
+      v-model="showChangePassword"
+    />
+    <!-- 修改手机号弹窗 -->
+    <ChangePhoneDialog
+      v-model="showChangePhone"
+      :current-phone="userInfo.phone"
+      @success="handlePhoneSuccess"
+    />
   </div>
 </template>
 
@@ -56,11 +66,22 @@
 import { User, Lock } from '@element-plus/icons-vue'
 import {useUserStore} from '@/stores/user'
 import dayjs from 'dayjs'
+import ChangePhoneDialog from './ChangePhoneDialog.vue'
+import ChangePerPassDialog from './ChangePerPassDialog.vue'
 
 const userStore = useUserStore()
 
 
 const userInfo = computed(() => userStore.userInfo)
+
+const showChangePhone = ref(false)
+const showChangePassword = ref(false)
+
+// 处理手机号更新成功
+const handlePhoneSuccess = () => {
+  ElMessage.success('操作成功')
+  // 可以在这里刷新用户信息
+}
 
 // 时间格式化
 const formatTime = (time: string, format: string = 'YYYY-MM-DD HH:mm') => {
@@ -74,7 +95,15 @@ function maskPhone(phone: string): string {
   return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
 }
 
+// 点击修改密码按钮
+const changePassword = () => {
+  showChangePassword.value = true
+}
 
+// 点击更换手机号按钮
+const changePhone = () => {
+  showChangePhone.value = true;
+}
 </script>
 
 <style scoped lang="scss">
