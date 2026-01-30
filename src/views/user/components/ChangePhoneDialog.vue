@@ -6,7 +6,7 @@
     width="400px"
     :close-on-click-modal="false"
   >
-    <!-- 有旧手机号的情况 -->
+    <!-- 更换手机号 -->
     <div v-if="hasOldPhone" class="phone-change-container">
       <!-- 第一步：验证旧手机号 -->
       <div v-if="step === 1" class="step-content">
@@ -24,24 +24,13 @@
             </el-button>
           </div>
         </div>
-
-        <el-form
-          ref="oldFormRef"
-          :model="oldForm"
-          :rules="codeRules"
-          label-width="80px"
-          class="phone-form"
-        >
-          <el-form-item label="验证码" prop="code">
-            <el-input
-              v-model="oldForm.code"
-              placeholder="请输入验证码"
-              maxlength="6"
-              class="code-input"
-            />
-          </el-form-item>
-        </el-form>
-
+        <pro-form 
+            ref="oldFormRef" 
+            :modelForm="oldForm"  
+            :rules="codeRules" 
+            :formItemList="oldFormList"
+          >
+        </pro-form>
         <div class="form-actions">
           <el-button @click="visible = false">取消</el-button>
           <el-button
@@ -56,40 +45,21 @@
 
       <!-- 第二步：输入新手机号 -->
       <div v-else class="step-content">
-        <el-form
+        <pro-form 
           ref="newFormRef"
-          :model="newForm"
-          :rules="newFormRules"
-          label-width="80px"
-          class="phone-form"
+          :modelForm="newForm"  
+          :rules="newFormRules" 
+          :formItemList="newFormList"
         >
-          <el-form-item label="新手机号" prop="phone">
-            <el-input
-              v-model="newForm.phone"
-              placeholder="请输入新手机号"
-              maxlength="11"
+        <template #phoneCode>
+            <PhoneCode 
+              v-model="newForm.code"
+              :buttonText="newButtonText"
+              :disabled="newCountdown > 0 || !newForm.phone"
+              @send="sendNewCode"
             />
-          </el-form-item>
-
-          <el-form-item label="验证码" prop="code">
-            <div class="code-input-group">
-              <el-input
-                v-model="newForm.code"
-                placeholder="请输入验证码"
-                maxlength="6"
-                class="code-input"
-              />
-              <el-button
-                type="primary"
-                :disabled="newCountdown > 0 || !newForm.phone"
-                @click="sendNewCode"
-              >
-                {{ newButtonText }}
-              </el-button>
-            </div>
-          </el-form-item>
-        </el-form>
-
+        </template>
+      </pro-form>
         <div class="form-actions">
           <el-button @click="step = 1">上一步</el-button>
           <el-button
@@ -103,42 +73,25 @@
       </div>
     </div>
 
-    <!-- 没有旧手机号的情况 -->
+    <!-- 绑定手机号 -->
     <div v-else class="phone-bind-container">
-      <el-form
-        ref="bindFormRef"
-        :model="bindForm"
-        :rules="bindFormRules"
-        label-width="80px"
-        class="phone-form"
+      <pro-form
+          ref="bindFormRef"
+          :modelForm="bindForm"  
+          :rules="bindFormRules" 
+          :formItemList="bindFormList"
       >
-        <el-form-item label="手机号" prop="phone">
-          <el-input
-            v-model="bindForm.phone"
-            placeholder="请输入手机号"
-            maxlength="11"
-          />
-        </el-form-item>
-
-        <el-form-item label="验证码" prop="code">
+        <template #phoneCode>
           <div class="code-input-group">
-            <el-input
-              v-model="bindForm.code"
-              placeholder="请输入验证码"
-              maxlength="6"
-              class="code-input"
+                <PhoneCode 
+                v-model="bindForm.code"
+                :buttonText="bindButtonText"
+                :disabled="bindCountdown > 0 || !bindForm.phone"
+                @send="sendBindCode"
             />
-            <el-button
-              type="primary"
-              :disabled="bindCountdown > 0 || !bindForm.phone"
-              @click="sendBindCode"
-            >
-              {{ bindButtonText }}
-            </el-button>
-          </div>
-        </el-form-item>
-      </el-form>
-
+            </div>
+        </template>
+      </pro-form>
       <div class="form-actions">
         <el-button @click="visible = false">取消</el-button>
         <el-button
@@ -157,7 +110,10 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useUserStore } from '@/stores/user'
-import {bindPersonalPhoneApi} from '@/api/auth'
+import {bindPersonalPhoneApi,checkedPhoneUniqueApi} from '@/api/auth'
+import ProForm from '@/components/ProForm/ProForm.vue'
+ import type {formItem} from '@/components/ProForm/ProForm.vue'
+ import PhoneCode from './PhoneCode.vue'
 
 interface Props {
   modelValue: boolean
@@ -185,21 +141,60 @@ const oldCountdown = ref(0)
 const newCountdown = ref(0)
 const bindCountdown = ref(0)
 
-// 表单数据
+// 修改手机号第一步表单数据
 const oldForm = reactive({
   code: ''
 })
 
+const oldFormList = reactive<formItem[]>([
+  {
+    type: 'input',
+    label: "验证码",
+    prop: "code",
+    maxlength: 6
+  }
+])
+
+// 修改手机号第二步表单数据
 const newForm = reactive({
   phone: '',
   code: ''
 })
 
+const newFormList = reactive<formItem[]>([
+  {
+    prop: "phone",
+    type: "tel",
+    label: "手机号",
+  },
+  {
+    type: 'input',
+    label: "验证码",
+    slot:'phoneCode',
+    prop:'code',
+    maxlength:6
+  }
+])
+// 绑定手机号表单数据
 const bindForm = reactive({
   phone: '',
   code: ''
 })
 
+const bindFormList = reactive<formItem[]>([
+  {
+    prop: "phone",
+    type: "tel",
+    label: "手机号",
+  },
+  {
+    type: 'input',
+    label: "验证码",
+    slot:'phoneCode',
+    prop:'code',
+    maxlength:6
+  }
+])
 // 计算属性
 const hasOldPhone = computed(() => !!props.currentPhone && props.currentPhone.trim() !== '')
 
@@ -218,8 +213,8 @@ const bindButtonText = computed(() => bindCountdown.value > 0 ? `${bindCountdown
 // 验证规则
 const codeRules: FormRules = {
   code: [
-    { required: true, message: '请输入验证码', trigger: 'blur' },
-    { pattern: /^\d{6}$/, message: '验证码为6位数字', trigger: 'blur' }
+    { required: true, message: '请输入验证码'},
+    { pattern: /^\d{6}$/, message: '验证码为6位数字'}
   ]
 }
 
@@ -305,31 +300,31 @@ const sendOldCode = () => {
 }
 
 // 发送新手机验证码
-const sendNewCode = () => {
+const sendNewCode = async() => {
   if (!newFormRef.value) return
-  
-  // 验证手机号格式
-  newFormRef.value.validateField('phone', (valid) => {
-    if (!valid) return
-    
-    // 模拟发送验证码
-    ElMessage.success(`验证码已发送到 ${maskPhone(newForm.phone)}`)
-    startCountdown('new')
-  })
+    try{
+      // 验证手机号格式
+      await newFormRef.value.validateField('phone');
+      await checkedPhoneUniqueApi({phone: newForm.phone}); //验证手机号的唯一性
+      ElMessage.success(`验证码已发送到 ${maskPhone(newForm.phone)}`)
+     startCountdown('new')
+    }catch(error){
+      console.log('error',error);
+    }
 }
 
 // 发送绑定验证码
-const sendBindCode = () => {
+const sendBindCode = async () => {
   if (!bindFormRef.value) return
-  
-  // 验证手机号格式
-  bindFormRef.value.validateField('phone', (valid) => {
-    if (!valid) return
-    
-    // 模拟发送验证码
-    ElMessage.success(`验证码已发送到 ${maskPhone(bindForm.phone)}`)
-    startCountdown('bind')
-  })
+    try{
+        // 验证手机号格式
+        await bindFormRef.value.validateField('phone');
+        await checkedPhoneUniqueApi({phone: bindForm.phone}); //验证手机号的唯一性
+        ElMessage.success(`验证码已发送到 ${maskPhone(bindForm.phone)}`)
+        startCountdown('bind')
+    }catch(error){
+        console.log('error',error);
+    }
 }
 
 // 验证旧手机号
@@ -338,17 +333,11 @@ const verifyOldPhone = async () => {
   
   try {
     await oldFormRef.value.validate()
-    
     // 模拟验证
     verifying.value = true
     setTimeout(() => {
-      // 假设验证码是 123456（仅演示）
-      if (oldForm.code === '123456') {
-        ElMessage.success('验证成功')
+       ElMessage.success('验证成功')
         step.value = 2
-      } else {
-        ElMessage.error('验证码错误，请重新输入')
-      }
       verifying.value = false
     }, 500)
   } catch {
@@ -361,26 +350,17 @@ const submitChange = async () => {
   if (!newFormRef.value) return
   
   try {
-    await newFormRef.value.validate()
-    
-    // 模拟提交
+    await newFormRef.value.validate(); //表单验证
+    await checkedPhoneUniqueApi({phone: newForm.phone}); //验证手机号的唯一性
     submitting.value = true
-    setTimeout(() => {
-      // 假设验证码是 123456（仅演示）
-      if (newForm.code === '123456') {
-        ElMessage.success('手机号更换成功')
-        
-        // 更新用户信息（模拟）
-        userStore.userInfo.phone = newForm.phone
-        
-        // 关闭对话框并触发成功事件
-        visible.value = false
-        emit('success')
-      } else {
-        ElMessage.error('验证码错误，请重新输入')
-      }
+     const res = await bindPersonalPhoneApi({phone: newForm.phone})
+      ElMessage.success(res.message || '手机号更换成功')
+      userStore.fetchUserInfo(); //重新获取用户信息
+      // 关闭对话框并触发成功事件
+      visible.value = false
+      emit('success')
       submitting.value = false
-    }, 800)
+
   } catch {
     // 验证失败
   }
@@ -391,26 +371,15 @@ const submitBind = async () => {
   if (!bindFormRef.value) return
   
   try {
-    await bindFormRef.value.validate()
-    
-    // 模拟提交
+    await bindFormRef.value.validate(); //表单验证
+    await checkedPhoneUniqueApi({phone: bindForm.phone}); //验证手机号的唯一性
     binding.value = true
-    setTimeout(() => {
-      // 假设验证码是 123456（仅演示）
-      if (bindForm.code === '123456') {
-        ElMessage.success('手机号绑定成功')
-        
-        // 更新用户信息（模拟）
-        userStore.userInfo.phone = bindForm.phone
-        
-        // 关闭对话框并触发成功事件
-        visible.value = false
-        emit('success')
-      } else {
-        ElMessage.error('验证码错误，请重新输入')
-      }
-      binding.value = false
-    }, 800)
+    const res = await bindPersonalPhoneApi({phone: bindForm.phone})
+    ElMessage.success(res.message || '手机号绑定成功');
+    userStore.fetchUserInfo(); //重新获取用户信息
+    visible.value = false
+    emit('success')
+    binding.value = false
   } catch {
     // 验证失败
   }
@@ -451,8 +420,7 @@ const maskPhone = (phone: string): string => {
     }
   }
   
-  .phone-form {
-    .code-input-group {
+   .code-input-group {
       display: flex;
       gap: 10px;
       
@@ -465,13 +433,13 @@ const maskPhone = (phone: string): string => {
         width: 120px;
       }
     }
-  }
   
   .form-actions {
+    width: 100%;
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    margin-top: 24px;
+    margin-top: 12px;
     padding-top: 20px;
     border-top: 1px solid var(--el-border-color);
   }

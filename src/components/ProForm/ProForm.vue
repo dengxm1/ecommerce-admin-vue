@@ -10,51 +10,56 @@
             >
             <view v-for="item in formItemList"  :style="getItemStyle(item.itemColStyle)">
                 <el-form-item :label="item.label" :prop="item.prop">
-                    <el-input
-                        v-if="getInputType(item.type)" 
-                        :type="item.type"
-                        v-model="modelForm[item.prop]" 
-                        :placeholder="item.placeholder|| `请输入${item.label}`"
-                        :clearable="item.clearable"
-                        :show-password="item.type == 'password'"
-                        :disabled="item.disabled"
-                        :maxlength="item.maxlength"
-                        :style="item.style"
-                        @input="item.inputParse ? modelForm[item.prop] = item.inputParse($event) : null"
-                        @keydown.enter="item.keyEnter && item.keyEnter($event)"
-                        @clear="item.clear"
-                    >
-                       <template v-if="item.append" #append>
-                            {{ item.append }}
-                       </template> 
-                    </el-input>
-                    <el-select
-                        v-if="item.type == 'select'"
-                        v-model="modelForm[item.prop]"
-                        :props="getSelectProps(item.selectProps)"
-                        :options="item.options"
-                        :placeholder="item.placeholder||`请选择${item.label}`"
-                        :clearable="item.clearable"
-                        :style="item.style"
-                        :disabled="item.disabled"
-                        @clear="item.clear"
+                    <template v-if="item.slot">
+                        <slot :name="[item.slot]"></slot>
+                    </template>
+                   <template v-else>
+                        <el-input
+                            v-if="getInputType(item.type)" 
+                            :type="item.type"
+                            v-model="modelForm[item.prop]" 
+                            :placeholder="item.placeholder|| `请输入${item.label}`"
+                            :clearable="item.clearable"
+                            :show-password="item.type == 'password'"
+                            :disabled="item.disabled"
+                            :maxlength="item.maxlength"
+                            :style="item.style"
+                            @input="item.inputParse ? modelForm[item.prop] = item.inputParse($event) : null"
+                            @keydown.enter="item.keyEnter && item.keyEnter($event)"
+                            @clear="item.clear"
+                        >
+                        <template v-if="item.append" #append>
+                                {{ item.append }}
+                        </template> 
+                        </el-input>
+                        <el-select
+                            v-if="item.type == 'select'"
+                            v-model="modelForm[item.prop]"
+                            :props="getSelectProps(item.selectProps)"
+                            :options="item.options"
+                            :placeholder="item.placeholder||`请选择${item.label}`"
+                            :clearable="item.clearable"
+                            :style="item.style"
+                            :disabled="item.disabled"
+                            @clear="item.clear"
+                            />
+                        <el-switch v-if="item.type == 'switch'" v-model="modelForm[item.prop]" :disabled="item.disabled"/>
+                        <el-date-picker
+                            v-if="item.type == 'dateRange'"
+                            v-model="modelForm[item.prop]"
+                            type="daterange"
+                            range-separator="至"
+                            start-placeholder="开始日期"
+                            end-placeholder="结束日期"
+                            value-format="YYYY-MM-DD"
+                            :style="item.style"
+                            :disabled="item.disabled"
+                            @clear="item.clear"
                         />
-                    <el-switch v-if="item.type == 'switch'" v-model="modelForm[item.prop]" :disabled="item.disabled"/>
-                    <el-date-picker
-                        v-if="item.type == 'dateRange'"
-                        v-model="modelForm[item.prop]"
-                        type="daterange"
-                        range-separator="至"
-                        start-placeholder="开始日期"
-                        end-placeholder="结束日期"
-                        value-format="YYYY-MM-DD"
-                        :style="item.style"
-                        :disabled="item.disabled"
-                        @clear="item.clear"
-                    />
-                <el-radio-group v-if="item.type == 'radio'" v-model="modelForm[item.prop]" :disabled="item.disabled">
-                    <el-radio v-for="list in item.options" :value="list.value">{{ list.label }}</el-radio>
-                </el-radio-group>
+                        <el-radio-group v-if="item.type == 'radio'" v-model="modelForm[item.prop]" :disabled="item.disabled">
+                            <el-radio v-for="list in item.options" :value="list.value">{{ list.label }}</el-radio>
+                        </el-radio-group>
+                   </template>
                 </el-form-item>
             </view>
             <view v-if="slots.footer">
@@ -80,6 +85,7 @@
         label: string,
         prop: string,
         type: string,
+        slot?: string,
         placeholder?: string,
         append?: string,
         slotContent?: string,

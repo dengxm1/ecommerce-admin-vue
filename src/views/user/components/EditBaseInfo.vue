@@ -92,7 +92,6 @@
             })
             dialogVisible.value = false;
             dialogFormRef.value?.resetFields?.();
-            userStore.userLoaded = false;
             userStore.fetchUserInfo();
             ElMessage({
                 message: res.message || '新增用户成功',

@@ -44,7 +44,7 @@
               <p v-if="userInfo.phone">已绑定手机：{{ maskPhone(userInfo.phone) }}</p>
               <p v-else>未绑定手机，请尽快绑定以保障账户安全</p>
             </div>
-            <el-button link type="primary" @click="changePhone">更换</el-button>
+            <el-button link type="primary" @click="changePhone">{{ userInfo.phone?'更换':'绑定' }}</el-button>
           </div>
         </div>
       </el-card>
@@ -57,7 +57,6 @@
     <ChangePhoneDialog
       v-model="showChangePhone"
       :current-phone="userInfo.phone"
-      @success="handlePhoneSuccess"
     />
   </div>
 </template>

@@ -7,7 +7,6 @@ import { ElMessage } from 'element-plus'
 export const useUserStore = defineStore('user',()=>{
     const router = useRouter()
     const userInfo = ref()
-     const userLoaded = ref(false) // 用户信息加载状态
 
     // 用户登录
     const login = async (data:loginParams) => {
@@ -21,24 +20,18 @@ export const useUserStore = defineStore('user',()=>{
     }    
       // 获取用户信息
     const fetchUserInfo = async () => {
-        if (userLoaded.value) {
-            return userInfo.value
-        }
         try {
             const res = await getUserInfo()
             userInfo.value = res.data
-             userLoaded.value = true
             return res
         } catch (error) {
             console.error('获取用户信息失败:', error)
-            userLoaded.value = false
             throw error
         }
     }
     // 清除用户信息
     const clearUserInfo = () => {
         userInfo.value = null
-        userLoaded.value = false
     }
     // 用户退出
     const logout = () => {
@@ -51,7 +44,6 @@ export const useUserStore = defineStore('user',()=>{
         })
     }
     return {
-        userLoaded,
         userInfo,
         logout,
         login,

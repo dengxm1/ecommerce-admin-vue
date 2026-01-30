@@ -58,3 +58,12 @@ export function bindPersonalPhoneApi(data: {phone: string}): Promise<BaseRespons
     data
   })
 }
+
+// 验证手机号的唯一性
+export function checkedPhoneUniqueApi(data: {phone: string}): Promise<BaseResponse> {
+  return request({
+    url: '/system/auth/checkedPhoneUnique',
+    method: 'post',
+    data
+  })
+}
