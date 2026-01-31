@@ -7,6 +7,7 @@
             :inline="inline"
             :label-position="labelPosition"
             :label-width="labelWidth"
+            :size="size"
             >
             <view v-for="item in formItemList"  :style="getItemStyle(item.itemColStyle)">
                 <el-form-item :label="item.label" :prop="item.prop">
@@ -82,7 +83,7 @@
         disabled?: string
     }
     export interface formItem {
-        label: string,
+        label?: string,
         prop: string,
         type: string,
         slot?: string,
@@ -103,6 +104,7 @@
         clear?: () => void
     }
     const props = defineProps<{
+        size?: '' | 'large' | 'default' | 'small',
         labelPosition?: 'left' | 'right' | 'top',
         labelWidth?: string | number,
         modelForm: Record<string,any>,

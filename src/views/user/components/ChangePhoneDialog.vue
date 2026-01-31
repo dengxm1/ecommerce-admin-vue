@@ -53,9 +53,10 @@
         >
         <template #phoneCode>
             <PhoneCode 
+              ref="newFormCodeRef"
               v-model="newForm.code"
-              :buttonText="newButtonText"
-              :disabled="newCountdown > 0 || !newForm.phone"
+              buttonText="发送验证码"
+              :disabled="!newForm.phone"
               @send="sendNewCode"
             />
         </template>
@@ -84,9 +85,10 @@
         <template #phoneCode>
           <div class="code-input-group">
                 <PhoneCode 
+                ref="bindFormCodeRef"
                 v-model="bindForm.code"
-                :buttonText="bindButtonText"
-                :disabled="bindCountdown > 0 || !bindForm.phone"
+                buttonText="发送验证码"
+                :disabled="!bindForm.phone"
                 @send="sendBindCode"
             />
             </div>
@@ -113,7 +115,6 @@ import { useUserStore } from '@/stores/user'
 import {bindPersonalPhoneApi,checkedPhoneUniqueApi} from '@/api/auth'
 import ProForm from '@/components/ProForm/ProForm.vue'
  import type {formItem} from '@/components/ProForm/ProForm.vue'
- import PhoneCode from './PhoneCode.vue'
 
 interface Props {
   modelValue: boolean
@@ -135,6 +136,10 @@ const step = ref(1) // 1: 验证旧手机, 2: 输入新手机
 const verifying = ref(false)
 const submitting = ref(false)
 const binding = ref(false)
+
+// 手机验证码组件
+const newFormCodeRef = ref()
+const bindFormCodeRef = ref();
 
 // 倒计时
 const oldCountdown = ref(0)
@@ -207,8 +212,6 @@ const maskedOldPhone = computed(() => {
 
 // 按钮文本
 const oldButtonText = computed(() => oldCountdown.value > 0 ? `${oldCountdown.value}s后重发` : '发送验证码')
-const newButtonText = computed(() => newCountdown.value > 0 ? `${newCountdown.value}s后重发` : '发送验证码')
-const bindButtonText = computed(() => bindCountdown.value > 0 ? `${bindCountdown.value}s后重发` : '发送验证码')
 
 // 验证规则
 const codeRules: FormRules = {
@@ -307,7 +310,7 @@ const sendNewCode = async() => {
       await newFormRef.value.validateField('phone');
       await checkedPhoneUniqueApi({phone: newForm.phone}); //验证手机号的唯一性
       ElMessage.success(`验证码已发送到 ${maskPhone(newForm.phone)}`)
-     startCountdown('new')
+     newFormCodeRef.value.startCountdown();
     }catch(error){
       console.log('error',error);
     }
@@ -321,7 +324,7 @@ const sendBindCode = async () => {
         await bindFormRef.value.validateField('phone');
         await checkedPhoneUniqueApi({phone: bindForm.phone}); //验证手机号的唯一性
         ElMessage.success(`验证码已发送到 ${maskPhone(bindForm.phone)}`)
-        startCountdown('bind')
+        bindFormCodeRef.value.startCountdown()
     }catch(error){
         console.log('error',error);
     }

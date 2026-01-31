@@ -19,6 +19,10 @@
     --text-regular: #606266;
     --text-secondary: #909399;
     --text-placeholder: #c0c4cc;
+
+    /* 渐变颜色 */
+    --gradient-primary: linear-gradient(135deg, var(--ecommerce-primary) 0%, #FF8B5A 100%);
+    --gradient-secondary: linear-gradient(135deg, var(--ecommerce-secondary) 0%, #6EE7DB 100%);
     
     /* 阴影 */
     --shadow-light: 0 2px 12px 0 rgba(0, 0, 0, 0.06);

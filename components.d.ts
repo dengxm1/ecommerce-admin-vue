@@ -74,6 +74,7 @@ declare module 'vue' {
     IconTooling: typeof import('./src/components/icons/IconTooling.vue')['default']
     Layout: typeof import('./src/components/Layout/index.vue')['default']
     PermissionDrawer: typeof import('./src/components/PermissionDrawer/PermissionDrawer.vue')['default']
+    PhoneCode: typeof import('./src/components/PhoneCode/PhoneCode.vue')['default']
     ProForm: typeof import('./src/components/ProForm/ProForm.vue')['default']
     ProFormDialog: typeof import('./src/components/ProFormDialog/ProFormDialog.vue')['default']
     ProTable: typeof import('./src/components/ProTable/ProTable.vue')['default']

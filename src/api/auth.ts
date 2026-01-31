@@ -1,10 +1,19 @@
 import request from '@/utils/request'
 import type{ loginParams, loginResponse,BaseResponse} from '@/types/apiType'
 
-// 登录
+// 账号登录
 export function login(data:loginParams) :Promise<loginResponse>{
   return request<loginResponse>({
     url: '/system/auth/login',
+    method: 'post',
+    data
+  })
+}
+
+// 手机号登录
+export function loginByPhone(data: {phone: string, code: string}) :Promise<loginResponse>{
+  return request<loginResponse>({
+    url: '/system/auth/loginByPhone',
     method: 'post',
     data
   })

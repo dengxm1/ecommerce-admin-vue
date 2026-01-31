@@ -3,27 +3,20 @@
     <!-- 左侧电商品牌展示区 -->
     <div class="login-left">
       <div class="brand-wrapper">
-        <div class="logo">
-          <i class="ep-shopping-bag"></i>
-        </div>
         <h1 class="brand-name">电商管理后台</h1>
         <p class="brand-description">专业电商解决方案 · 多租户架构支持</p>
         
         <div class="features">
           <div class="feature-item">
-            <i class="ep-goods"></i>
             <span>商品管理</span>
           </div>
           <div class="feature-item">
-            <i class="ep-sold-out"></i>
             <span>订单管理</span>
           </div>
           <div class="feature-item">
-            <i class="ep-user-filled"></i>
             <span>会员管理</span>
           </div>
           <div class="feature-item">
-            <i class="ep-data-analysis"></i>
             <span>数据分析</span>
           </div>
         </div>
@@ -36,77 +29,146 @@
         <!-- 登录表单 -->
         <div class="login-form">
           <div class="form-header">
-            <h2>账号登录</h2>
-            <p>欢迎使用电商管理后台系统</p>
+            <h2>欢迎登录</h2>
+            <p>电商管理后台系统</p>
           </div>
-
-          <el-form
-            ref="loginFormRef"
-            :model="loginForm"
-            :rules="loginRules"
-            size="large"
-            @submit.prevent="handleLogin"
-          >
-            <!-- 租户选择（为多租户扩展预留） -->
-            <el-form-item prop="tenantId" v-if="showTenantSelect">
-              <el-select
-                v-model="loginForm.tenantId"
-                placeholder="请选择租户"
-                clearable
-                class="tenant-select"
-              >
-                <el-option label="默认商户" value="1" />
-                <!-- 多租户扩展时动态加载 -->
-              </el-select>
-            </el-form-item>
-
-            <!-- 用户名 -->
-            <el-form-item prop="username">
-              <el-input
-                v-model="loginForm.username"
-                placeholder="请输入用户名"
-                prefix-icon="ep-user"
-                @keyup.enter="handleLogin"
-              />
-            </el-form-item>
-
-            <!-- 密码 -->
-            <el-form-item prop="password">
-              <el-input
-                v-model="loginForm.password"
-                type="password"
-                placeholder="请输入密码"
-                prefix-icon="ep-lock"
-                show-password
-                @keyup.enter="handleLogin"
-              />
-            </el-form-item>
-
-            <!-- 记住我 -->
-            <div class="form-options">
-              <el-checkbox v-model="loginForm.rememberMe">记住我</el-checkbox>
-              <el-link type="primary" :underline="false">忘记密码？</el-link>
-            </div>
-
-            <!-- 登录按钮 -->
-            <el-form-item>
-              <el-button
-                type="primary"
+          <el-tabs v-model="activeTab" class="login-tabs">
+            <!-- 账号密码登录 -->
+            <el-tab-pane label="账号密码登录" name="account">
+              <el-form
+                ref="accountFormRef"
+                :model="accountForm"
+                :rules="accountRules"
                 size="large"
-                :loading="loading"
-                @click="handleLogin"
-                class="login-btn"
+                @submit.prevent="handleAccountLogin"
+                class="tab-form"
               >
-                {{ loading ? '登录中...' : '登录' }}
-              </el-button>
-            </el-form-item>
+                <el-form-item prop="tenantId" v-if="showTenantSelect">
+                  <el-select
+                    v-model="accountForm.tenantId"
+                    placeholder="请选择租户"
+                    clearable
+                    class="tenant-select"
+                  >
+                    <el-option label="默认商户" value="1" />
+                  </el-select>
+                </el-form-item>
 
-            <!-- 系统提示 -->
-            <div class="system-tips">
-              <p>初始账号：admin / 123456</p>
-              <p class="tip-note">提示：系统管理员账号在数据库初始化时创建</p>
-            </div>
-          </el-form>
+                <el-form-item prop="username">
+                  <el-input
+                    v-model="accountForm.username"
+                    placeholder="请输入用户名"
+                    :prefix-icon="User"
+                    @keyup.enter="handleAccountLogin"
+                  />
+                </el-form-item>
+                <el-form-item prop="password">
+                  <el-input
+                    v-model="accountForm.password"
+                    type="password"
+                    placeholder="请输入密码"
+                    :prefix-icon="Lock"
+                    show-password
+                    @keyup.enter="handleAccountLogin"
+                  />
+                </el-form-item>
+
+                <div class="form-options">
+                  <el-checkbox v-model="accountForm.rememberMe">记住我</el-checkbox>
+                  <el-link 
+                    type="primary" 
+                    :underline="false"
+                    @click="showForgotPassword = true"
+                  >
+                    忘记密码？
+                  </el-link>
+                </div>
+                <el-form-item>
+                  <el-button
+                    type="primary"
+                    size="large"
+                    :loading="accountLoading"
+                    @click="handleAccountLogin"
+                    class="login-btn"
+                  >
+                    {{ accountLoading ? '登录中...' : '登录' }}
+                  </el-button>
+                </el-form-item>
+              </el-form>
+            </el-tab-pane>
+
+            <!-- 手机号登录 -->
+            <el-tab-pane label="手机号登录" name="phone">
+              <el-form
+                ref="phoneFormRef"
+                :model="phoneForm"
+                :rules="phoneRules"
+                size="large"
+                @submit.prevent="handlePhoneLogin"
+                class="tab-form"
+              >
+                <!-- 手机号 -->
+                <el-form-item prop="phone">
+                  <el-input
+                    v-model="phoneForm.phone"
+                    placeholder="请输入手机号"
+                    :prefix-icon="Iphone"
+                    maxlength="11"
+                  >
+                    <template #prepend>
+                      +86
+                    </template>
+                  </el-input>
+                </el-form-item>
+
+                <!-- 验证码 -->
+                <el-form-item prop="captcha">
+                  <phone-code 
+                      ref="phoneCodeRef"
+                      v-model="phoneForm.captcha"
+                      buttonText="获取验证码"
+                      :disabled="countdown > 0"
+                      @send="sendCaptcha"
+                  />
+                </el-form-item>
+
+                <!-- 协议 -->
+               <div class="form-options">
+                <div class="agreement-wrapper">
+                  <el-checkbox v-model="phoneForm.agreement"></el-checkbox>
+                  <div class="agreement-content">
+                    <div class="agreement-label">
+                      <span>我已阅读并同意</span>
+                      <span class="link">用户协议</span>
+                      <span>和</span>
+                      <span class="link">隐私政策</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+                <!-- 登录按钮 -->
+                <el-form-item>
+                  <el-button
+                    type="primary"
+                    size="large"
+                    :loading="phoneLoading"
+                    @click="handlePhoneLogin"
+                    class="login-btn"
+                  >
+                    {{ phoneLoading ? '登录中...' : '登录' }}
+                  </el-button>
+                </el-form-item>
+              </el-form>
+            </el-tab-pane>
+          </el-tabs>
+
+          <!-- 系统提示 -->
+          <div class="system-tips">
+            <p v-if="activeTab === 'account'">初始账号：admin / 123456</p>
+            <p v-else>测试手机号：13800138000 / 验证码：123456</p>
+            <p class="tip-note">提示：系统管理员账号在数据库初始化时创建</p>
+          </div>
 
           <!-- 底部信息 -->
           <div class="form-footer">
@@ -119,18 +181,31 @@
         </div>
       </div>
     </div>
+
+    <!-- 忘记密码弹窗 -->
+    <el-dialog
+      v-model="showForgotPassword"
+      title="找回密码"
+      width="450px"
+      :close-on-click-modal="false"
+    >
+      <forgot-password-form @success="handlePasswordResetSuccess" />
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import ForgotPasswordForm from './components/ForgotPasswordForm.vue'
+import { User, Lock, Iphone, Phone } from '@element-plus/icons-vue'
 
 // 路由实例
 const router = useRouter()
 const route = useRoute()
+
+// 手机验证码组件
+const phoneCodeRef = ref()
 
 const redirect = route.query.redirect as string
 const otherQuery = Object.keys(route.query)
@@ -139,22 +214,41 @@ const otherQuery = Object.keys(route.query)
     obj[key] = route.query[key]
     return obj
   }, {} as Record<string, any>)
-// Pinia Store
+
 const userStore = useUserStore()
 
 // 表单引用
-const loginFormRef = ref<FormInstance>()
+const accountFormRef = ref<FormInstance>()
+const phoneFormRef = ref<FormInstance>()
 
-// 表单数据
-const loginForm = reactive({
-  tenantId: '1', // 默认租户ID（单商户模式）
+// 当前激活的标签页
+const activeTab = ref('account')
+
+// 忘记密码弹窗显示状态
+const showForgotPassword = ref(false)
+
+// 账号登录表单数据
+const accountForm = reactive({
+  tenantId: '1',
   username: 'admin',
   password: '123456',
   rememberMe: false
 })
 
+// 手机号登录表单数据
+const phoneForm = reactive({
+  phone: '13800138000',
+  captcha: '',
+  agreement: true
+})
+
 // 加载状态
-const loading = ref(false)
+const accountLoading = ref(false)
+const phoneLoading = ref(false)
+
+// 验证码倒计时
+const countdown = ref(0)
+let countdownTimer: number | null = null
 
 // 是否显示租户选择
 const showTenantSelect = computed(() => {
@@ -167,7 +261,7 @@ const isSingleTenant = computed(() => {
 })
 
 // 验证规则
-const loginRules: FormRules = {
+const accountRules: FormRules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
     { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
@@ -178,58 +272,139 @@ const loginRules: FormRules = {
   ]
 }
 
-// 登录处理
-const handleLogin = async () => {
-  if (!loginFormRef.value) return
+const phoneRules: FormRules = {
+  phone: [
+    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { 
+      pattern: /^1[3-9]\d{9}$/,
+      message: '请输入正确的手机号码',
+      trigger: 'blur'
+    }
+  ],
+  captcha: [
+    { required: true, message: '请输入验证码', trigger: 'blur' },
+    { len: 6, message: '验证码长度为6位', trigger: 'blur' }
+  ]
+}
+
+// 发送验证码
+const sendCaptcha = async () => {
+  if (!phoneFormRef.value) return
   
-  // 验证表单
-  const valid = await loginFormRef.value.validate()
+  // 验证手机号
+  try {
+    await phoneFormRef.value.validateField('phone');
+    // 模拟发送验证码
+    ElMessage.success(`验证码已发送至 ${phoneForm.phone}`)
+    phoneCodeRef.value.startCountdown()
+  } catch {
+    return
+  }
+}
+
+// 账号密码登录处理
+const handleAccountLogin = async () => {
+  if (!accountFormRef.value) return
+  
+  const valid = await accountFormRef.value.validate()
   if (!valid) return
 
-  loading.value = true
+  accountLoading.value = true
   
   try {
-    // 调用Pinia Store的登录方法
     await userStore.login({
-      username: loginForm.username,
-      password: loginForm.password
+      username: accountForm.username,
+      password: accountForm.password
     })
+
+    // 处理记住我
+    if (accountForm.rememberMe) {
+      localStorage.setItem('remembered_username', accountForm.username)
+    } else {
+      localStorage.removeItem('remembered_username')
+    }
 
     // 登录成功提示
     ElMessage.success('登录成功')
     // 如果有 redirect 参数，跳转到指定页面
     if (redirect) {
-      await router.push({
+       router.push({
         path: redirect,
         query: otherQuery
       })
     } else {
       // 否则跳转到首页
-      await router.push('/')
+      router.push('/')
     }
   } catch (error: any) {
   } finally {
-    loading.value = false
+    accountLoading.value = false
   }
+}
+
+// 手机号登录处理
+const handlePhoneLogin = async () => {
+  if (!phoneFormRef.value) return
+  
+  const valid = await phoneFormRef.value.validate()
+  if (!valid) return
+
+  if (!phoneForm.agreement) {
+    ElMessage.warning('请同意用户协议和隐私政策')
+    return
+  }
+
+  phoneLoading.value = true
+  
+  try {
+    // 模拟验证码验证
+    if (phoneForm.captcha !== '123456') {
+      throw new Error('验证码错误')
+    }
+
+    // 模拟手机号登录
+    await userStore.loginByPhone({
+      phone: phoneForm.phone,
+      code: phoneForm.captcha
+    })
+    ElMessage.success('登录成功')
+    if (redirect) {
+       router.push({
+        path: redirect,
+        query: otherQuery
+      })
+    } else {
+      router.push('/')
+    }
+  } catch (error: any) {
+  } finally {
+    phoneLoading.value = false
+  }
+}
+
+// 密码重置成功处理
+const handlePasswordResetSuccess = () => {
+  showForgotPassword.value = false
+  ElMessage.success('密码重置成功，请使用新密码登录')
+  // 切换到账号登录标签页
+  activeTab.value = 'account'
 }
 
 // 页面加载时检查是否有记住的账号
 onMounted(() => {
   const savedUsername = localStorage.getItem('remembered_username')
   if (savedUsername) {
-    loginForm.username = savedUsername
-    loginForm.rememberMe = true
+    accountForm.username = savedUsername
+    accountForm.rememberMe = true
+  }
+
+  // 清理定时器
+  return () => {
+    if (countdownTimer) {
+      clearInterval(countdownTimer)
+    }
   }
 })
-
-// 监听记住我变化
-const handleRememberChange = (value: boolean) => {
-  if (value) {
-    localStorage.setItem('remembered_username', loginForm.username)
-  } else {
-    localStorage.removeItem('remembered_username')
-  }
-}
 </script>
 
 <style scoped lang="scss">
@@ -240,7 +415,7 @@ const handleRememberChange = (value: boolean) => {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* 左侧区域 */
+/* 左侧区域 - 保持原有样式不变 */
 .login-left {
   flex: 1;
   background: linear-gradient(135deg, var(--ecommerce-primary) 0%, var(--ecommerce-secondary) 100%);
@@ -377,7 +552,7 @@ const handleRememberChange = (value: boolean) => {
 
 .form-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 
   h2 {
     color: var(--text-primary);
@@ -392,8 +567,61 @@ const handleRememberChange = (value: boolean) => {
   }
 }
 
+/* Element UI Tabs 样式 - 保持原有设计风格 */
+:deep(.login-tabs) {
+  .el-tabs__header {
+    margin-bottom: 1.5rem;
+  }
+
+  .el-tabs__nav-wrap::after {
+    height: 1px;
+    background-color: var(--border-color);
+  }
+
+  .el-tabs__active-bar {
+    background-color: var(--ecommerce-primary);
+    height: 3px;
+  }
+
+  .el-tabs__item {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-regular);
+    padding: 0 16px;
+    
+    &:hover {
+      color: var(--ecommerce-primary);
+    }
+
+    &.is-active {
+      color: var(--ecommerce-primary);
+    }
+  }
+}
+
+.tab-form {
+  margin-top: 1rem;
+}
+
 :deep(.tenant-select) {
   width: 100%;
+}
+
+/* 验证码输入样式 */
+.captcha-input {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+
+  :deep(.el-input) {
+    flex: 1;
+  }
+
+  .captcha-btn {
+    flex-shrink: 0;
+    min-width: 110px;
+    height: 40px;
+  }
 }
 
 .form-options {
@@ -408,6 +636,7 @@ const handleRememberChange = (value: boolean) => {
 
   :deep(.el-link) {
     font-size: 0.9rem;
+    margin: 0 2px;
   }
 }
 
@@ -428,6 +657,13 @@ const handleRememberChange = (value: boolean) => {
 
   &:active {
     transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 }
 
@@ -505,6 +741,16 @@ const handleRememberChange = (value: boolean) => {
   .login-form {
     padding: 1.5rem;
   }
+
+  .captcha-input {
+    flex-direction: column;
+    align-items: stretch;
+    
+    .captcha-btn {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+  }
 }
 
 /* 暗色模式适配 */
@@ -523,6 +769,29 @@ const handleRememberChange = (value: boolean) => {
 
   .system-tips {
     background: #3d3d3d;
+  }
+}
+
+.agreement-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.agreement-content {
+  flex: 1;
+  height: 40px;
+  line-height: 40px;
+}
+
+.link {
+  color: var(--ecommerce-primary);
+  cursor: pointer;
+  text-decoration: none;
+  margin: 0 4px;
+  
+  &:hover {
+    text-decoration: underline;
   }
 }
 </style>

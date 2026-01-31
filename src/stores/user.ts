@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import {getUserInfo,login as loginApi} from '@/api/auth'
+import {getUserInfo,login as loginApi, loginByPhone as loginByPhoneApi} from '@/api/auth'
 import type{ loginParams} from '@/types/apiType'
 import { ElMessage } from 'element-plus'
 
@@ -17,7 +17,18 @@ export const useUserStore = defineStore('user',()=>{
        }catch(error){
             throw error
        }
-    }    
+    }   
+    
+    // 手机号登录
+    const loginByPhone = async (data:{phone: string, code: string}) => {
+       try{
+            const res = await loginByPhoneApi(data)
+            localStorage.setItem("access-token",res.token)
+            return res
+       }catch(error){
+            throw error
+       }
+    }   
       // 获取用户信息
     const fetchUserInfo = async () => {
         try {
@@ -47,6 +58,7 @@ export const useUserStore = defineStore('user',()=>{
         userInfo,
         logout,
         login,
+        loginByPhone,
         clearUserInfo,
         fetchUserInfo
     }
