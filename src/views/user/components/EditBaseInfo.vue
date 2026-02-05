@@ -30,27 +30,27 @@
             username: string,
             nickname?: string,
             email?: string,
-            avatar?: string
+            avatar?: string[]
     }
 
     const modelForm = reactive<RuleForm>({
         username: "",
         nickname: "",
         email: "",
-        avatar: ""
+        avatar: []
     })
 
     const formItemList = reactive<formItem[]>([
-        // {
-        //     label: "头像",
-        //     prop: "avatar",
-        //     type: "upload",
-        // },
         {
             label: "用户名",
             prop: "username",
             type: "input",
             disabled: true
+        },
+        {
+            label: "头像",
+            prop: "avatar",
+            type: "upload",
         },
         {
             label: "昵称",
@@ -88,7 +88,8 @@
         try{
             const res = await updatePersonalInfoApi({
                 email: modelForm.email,
-                nickname: modelForm.nickname
+                nickname: modelForm.nickname,
+                avatar: modelForm.avatar?.join('')
             })
             dialogVisible.value = false;
             dialogFormRef.value?.resetFields?.();
@@ -108,6 +109,9 @@
             modelForm.username = props.data.username;
             modelForm.nickname = props.data.nickname;
             modelForm.email = props.data.email;
+            if(props.data.avatar){
+                modelForm.avatar = props.data.avatar?.split(',')
+            }
         }else{
            dialogFormRef.value?.clearValidate?.();
         }

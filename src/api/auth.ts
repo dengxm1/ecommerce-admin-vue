@@ -42,7 +42,7 @@ export function getPermissionsListApi() {
 }
 
 // 修改个人信息
-export function updatePersonalInfoApi(data: {email?: string, nickname?: string}): Promise<BaseResponse> {
+export function updatePersonalInfoApi(data: {email?: string, nickname?: string, avatar?: string}): Promise<BaseResponse> {
   return request({
     url: '/system/auth/updatePersonalInfo',
     method: 'post',

@@ -44,6 +44,11 @@
                             :disabled="item.disabled"
                             @clear="item.clear"
                             />
+                        <pro-upload 
+                            v-if="item.type == 'upload'"
+                            v-model="modelForm[item.prop]"
+                            :limit="item.limit"
+                        />
                         <el-switch v-if="item.type == 'switch'" v-model="modelForm[item.prop]" :disabled="item.disabled"/>
                         <el-date-picker
                             v-if="item.type == 'dateRange'"
@@ -74,6 +79,7 @@
 <script setup lang="ts">
     import type { FormRules, FormInstance } from 'element-plus'
     import type { CSSProperties } from 'vue'
+import ProUpload from '../ProUpload/ProUpload.vue'
     const slots = useSlots()
 
     const proFormRef = ref<FormInstance>()
@@ -99,6 +105,7 @@
         disabled?: boolean,
         maxlength?: number | string,
         minlength?: number | string,
+        limit?: number,
         inputParse?: (value: string) => string,
         keyEnter?: (event: KeyboardEvent | Event) => void,
         clear?: () => void

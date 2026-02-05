@@ -31,7 +31,7 @@
         nickname?: string,
         email?: string,
         phone?: string,
-        avatar?: string,
+        avatar?: string[],
         isEnabled?: number
     }
     const props = defineProps<{
@@ -65,10 +65,10 @@
         username: "",
         password: "",
         confirmPassword:"",
+        avatar: [],
         nickname: "",
         email: "",
         phone: "",
-        avatar: "",
         isEnabled: 1
     })
     const baseFormItemList = reactive<formItem[]>([
@@ -95,6 +95,12 @@
         }
         },
         {
+            label: "头像",
+            prop: "avatar",
+            type: "upload",
+            limit: 1
+        },
+        {
             label: "昵称",
             prop: "nickname",
             type: "input",
@@ -112,11 +118,6 @@
             type: "tel",
             clearable:true
         },
-        // {
-        //     label: "头像",
-        //     prop: "avatar",
-        //     type: "upload",
-        // },
          {
             label: "是否禁用",
             prop: "isEnabled",
@@ -198,7 +199,7 @@
         return baseFormItemList;
     })
 
-    const currentRules = <FormRules<RuleForm>>computed(() => {
+    const currentRules = computed(() => {
         if (props.type === 'view') {
             return {}
         }
@@ -253,7 +254,7 @@
             modelForm.nickname = ""
             modelForm.email = ""
             modelForm.phone = ""
-            modelForm.avatar = ""
+            modelForm.avatar = []
             modelForm.isEnabled = 1
         setTimeout(() => {
             dialogFormRef.value?.clearValidate?.();
@@ -262,7 +263,7 @@
 
     const submit = async () => {
        try {
-            const submitData = { ...modelForm };
+            const submitData = { ...modelForm, avatar: modelForm.avatar?.join()};
             if (props.type !== 'create') {
                 delete submitData.password;
                 delete submitData.confirmPassword;
@@ -270,6 +271,7 @@
                 // 创建模式：确认密码字段不需要提交
                 delete submitData.confirmPassword;
             }
+
             // 根据类型调用不同的 API
             if (props.type === 'create') {
                 const res = await addUserApi(submitData);
