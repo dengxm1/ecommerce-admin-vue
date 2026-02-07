@@ -51,6 +51,7 @@
                     :icon="Download" 
                     @click="handleExport"
                     class="export-btn"
+                    :disabled="exportLoading"
                   >
                     导出数据
                   </el-button>
@@ -120,16 +121,6 @@
                 </span>
               </div>
             </template>
-            <template #createdAt="{row}">
-                <div class="time-info">
-                  <div class="create-time">
-                    {{ formatTime(row.createdAt) }}
-                  </div>
-                  <div class="last-login" v-if="row.lastLoginTime">
-                    最后登录：{{ formatTime(row.lastLoginTime) }}
-                  </div>
-              </div>
-            </template>
             <template #action="{row}">
                  <div class="action-buttons">
                   <el-tooltip content="查看详情" placement="top">
@@ -179,7 +170,7 @@
                       </el-dropdown-item>
                       <el-dropdown-item 
                         command="toggleStatus"
-                        :divided="row.isEnabled"
+                        divided
                       >
                         <el-icon>
                           <component :is="row.isEnabled ? CircleClose : CircleCheck" />
@@ -188,7 +179,7 @@
                       </el-dropdown-item>
                       <el-dropdown-item 
                         command="resetPassword"
-                        :divided="row.isEnabled"
+                        divided
                       >
                         <el-icon><Lock /></el-icon>
                         <span>重置密码</span>
@@ -243,7 +234,7 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
-import {getUserListApi,updateUserStatusApi,deleteUserApi, getUserPermissionIdsApi} from '@/api/user'
+import {getUserListApi,updateUserStatusApi,deleteUserApi, getUserPermissionIdsApi,exportUserDataApi} from '@/api/user'
 
 // 组件
 import UserFormDialog from './components/UserFormDialog.vue'
@@ -395,8 +386,10 @@ const columns = ref<TableColumn[]>([
     {
         prop: 'createdAt',
         label:'创建时间',
-        slot:'createdAt',
         sortable: true,
+        columnFormatter: (row) => {
+          return formatTime(row.createdAt)
+        }
     }
 ])
 
@@ -409,7 +402,9 @@ const pagination = reactive({
 
 
 const loading = ref(false)
+const exportLoading = ref(false)
 const selectedRows = ref<any[]>([])
+
 
 // 对话框状态
 const userDialog = reactive({
@@ -584,15 +579,26 @@ const handleBatchDelete = async () => {
   }
 }
 
+// 导出用户数据
 const handleExport = async () => {
-  loading.value = true
+   if (exportLoading.value) {
+    ElMessage.warning('正在导出中，请稍候...')
+    return
+  }
   try {
-    // todo:导出
+    exportLoading.value = true
     ElMessage.success('导出任务已开始，请稍后查看下载列表')
+    let params = Object.assign({
+      pageNum: pagination.current,
+      pageSize: pagination.size
+    }, searchForm)
+    await exportUserDataApi(params);
   } catch (error) {
-    ElMessage.error('导出失败')
   } finally {
-    loading.value = false
+     // 延迟清除状态,避免频繁点击
+    setTimeout(() => {
+      exportLoading.value = false
+    }, 1000)
   }
 }
 

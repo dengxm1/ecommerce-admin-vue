@@ -3,7 +3,7 @@
     v-model="dialogVisible"
     width="600"
   >
-  <template #title>
+  <template #header>
     <div class="title-container">{{ title }}</div>
   </template>
     <ProForm 

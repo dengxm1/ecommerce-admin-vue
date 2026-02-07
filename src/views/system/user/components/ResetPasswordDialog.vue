@@ -25,7 +25,7 @@
 
     const props = defineProps<{
         modelValue: boolean,
-        userData: Record<string, any>
+        userData?: Record<string, any>
     }>()
 
     const emit = defineEmits<{
@@ -86,7 +86,7 @@
     const submit = async () => {
         try {
           const res = await resetUserPasswordApi({
-                id: props.userData.id,
+                id: props.userData?.id,
                 password: modelForm.password!
             })
             emit('success')

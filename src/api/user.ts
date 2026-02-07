@@ -1,5 +1,6 @@
 import request from '@/utils/request'
 import type{ userInfo, BaseResponse, getUserListParams,updateUserParams} from '@/types/apiType'
+import {downloadFile} from '@/utils/downloadService'
 
 // 新增用户
 export function addUserApi(data: userInfo) :Promise<BaseResponse>{
@@ -70,4 +71,9 @@ export function getUserPermissionIdsApi(userId: number|string) :Promise<BaseResp
     url: `/sys/user/menuIds/${userId}`,
     method: 'get'
   })
+}
+
+// 导出用户数据
+export function exportUserDataApi(params: getUserListParams) : Promise<void>{
+  return downloadFile('/sys/user/export', params)
 }
