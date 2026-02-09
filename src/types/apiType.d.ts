@@ -35,6 +35,17 @@ export interface getUserListParams{
   sortOrder?: string
 }
 
+export interface exportUserDataParams{
+  username?: string,
+  nickname?: string,
+  phone?: string,
+  email?: string,
+  isEnabled?: number | string,
+  roleId?: number | string,
+  sortField?: string,
+  sortOrder?: string
+}
+
 export interface updateUserParams{
     nickname?: string,
     email?: string,

@@ -7,6 +7,7 @@ import App from './App.vue'
 import router from './router'
 import './styles/main.scss'  
 import {permissionDirective} from '@/directives/permission'
+import './styles/nprogress.scss'
 
 const app = createApp(App)
 

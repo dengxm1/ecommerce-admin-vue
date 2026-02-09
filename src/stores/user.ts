@@ -3,11 +3,12 @@ import { defineStore } from 'pinia'
 import {getUserInfo,login as loginApi, loginByPhone as loginByPhoneApi} from '@/api/auth'
 import type{ loginParams} from '@/types/apiType'
 import { ElMessage } from 'element-plus'
+import { useTabsStore } from './tabs'
 
 export const useUserStore = defineStore('user',()=>{
     const router = useRouter()
     const userInfo = ref()
-
+    const tabsStore = useTabsStore()
     // 用户登录
     const login = async (data:loginParams) => {
        try{
@@ -42,6 +43,7 @@ export const useUserStore = defineStore('user',()=>{
     }
     // 清除用户信息
     const clearUserInfo = () => {
+        tabsStore.resetTab()
         userInfo.value = null
     }
     // 用户退出

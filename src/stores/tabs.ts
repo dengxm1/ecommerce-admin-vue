@@ -60,6 +60,23 @@ export const useTabsStore = defineStore('tabs', ()=> {
             }
       }
     }
+    // 重置标签页
+    const resetTab = () =>{
+        tabs.value = [
+            {
+                path: '/dashboard',
+                name:'dashboard',
+                fullPath: '/dashboard',
+                query: {},
+                params: {},
+                closable: false,
+                meta: {
+                    title: '概览',
+                    hidden:false
+                }
+            }
+        ]
+    }
 
     return {
         tabs,
@@ -67,6 +84,7 @@ export const useTabsStore = defineStore('tabs', ()=> {
         currentTab,
         setActiveTab,
         addTab,
+        resetTab,
         removeTab
     }
 })

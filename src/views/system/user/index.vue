@@ -579,7 +579,7 @@ const handleBatchDelete = async () => {
   }
 }
 
-// 导出用户数据
+// 导出当前筛选条件下的数据，忽略分页
 const handleExport = async () => {
    if (exportLoading.value) {
     ElMessage.warning('正在导出中，请稍候...')
@@ -588,11 +588,7 @@ const handleExport = async () => {
   try {
     exportLoading.value = true
     ElMessage.success('导出任务已开始，请稍后查看下载列表')
-    let params = Object.assign({
-      pageNum: pagination.current,
-      pageSize: pagination.size
-    }, searchForm)
-    await exportUserDataApi(params);
+    await exportUserDataApi(searchForm);
   } catch (error) {
   } finally {
      // 延迟清除状态,避免频繁点击
@@ -678,7 +674,9 @@ const formatTime = (time: string, format: string = 'YYYY-MM-DD HH:mm') => {
 
 // 初始化
 onMounted(() => {
-  fetchUserList()
+  console.log('用户页面初始化')
+  fetchUserList();
+  roleStore.fetchAllRoles();
 })
 </script>
 
