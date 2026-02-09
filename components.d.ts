@@ -84,6 +84,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Sidebar: typeof import('./src/components/Layout/sidebar.vue')['default']
+    SliderCaptcha: typeof import('./src/components/SliderCaptcha/SliderCaptcha.vue')['default']
     Tabs: typeof import('./src/components/Layout/tabs.vue')['default']
     WelcomeItem: typeof import('./src/components/WelcomeItem.vue')['default']
   }

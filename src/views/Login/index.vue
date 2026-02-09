@@ -191,6 +191,7 @@
     >
       <forgot-password-form @success="handlePasswordResetSuccess" />
     </el-dialog>
+    <slider-captcha :visible="sliderCaptchaVisible"/>
   </div>
 </template>
 
@@ -199,6 +200,7 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import ForgotPasswordForm from './components/ForgotPasswordForm.vue'
 import { User, Lock, Iphone, Phone } from '@element-plus/icons-vue'
+import SliderCaptcha from '@/components/SliderCaptcha/SliderCaptcha.vue'
 
 // 路由实例
 const router = useRouter()
@@ -206,6 +208,9 @@ const route = useRoute()
 
 // 手机验证码组件
 const phoneCodeRef = ref()
+
+// 拼图验证码
+const sliderCaptchaVisible = ref(true);
 
 const redirect = route.query.redirect as string
 const otherQuery = Object.keys(route.query)
