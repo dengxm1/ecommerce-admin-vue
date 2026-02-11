@@ -17,9 +17,10 @@ export const  generateSliderCaptcha = async(): Promise<SliderCaptchaResponse> =>
 }
 
 // 验证滑动验证码
-export function validateSliderCaptcha(data: SliderCaptchaRequest) :Promise<VerifyResult<SliderCaptchaResponse>>{
-  return request<VerifyResult<SliderCaptchaResponse>>({
-    url: '/captcha/slider/validate',
-    method: 'post'
+export function verifySliderCaptcha(data: SliderCaptchaRequest) :Promise<VerifyResult<void>>{
+  return request<VerifyResult<void>>({
+    url: '/captcha/slider/verify',
+    method: 'post',
+    data
   })
 }

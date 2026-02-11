@@ -191,7 +191,7 @@
     >
       <forgot-password-form @success="handlePasswordResetSuccess" />
     </el-dialog>
-    <slider-captcha :visible="sliderCaptchaVisible"/>
+    <slider-captcha v-model:visible="sliderCaptchaVisible"/>
   </div>
 </template>
 

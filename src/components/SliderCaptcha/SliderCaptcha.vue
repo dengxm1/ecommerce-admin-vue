@@ -1,5 +1,5 @@
 <template>
-  <div class="slider-captcha-modal" v-if="visible" @click.self="handleClose">
+  <div class="slider-captcha-modal" v-if="props.visible" @click.self="handleClose">
     <div class="captcha-content">
       <!-- 标题栏 -->
       <div class="captcha-header">
@@ -11,116 +11,148 @@
 
       <!-- 验证区域 -->
       <div class="captcha-body">
-        <!-- 提示文字 -->
-        <div class="captcha-tips">
-          <p>请拖动滑块完成拼图验证</p>
-        </div>
-
         <!-- 图片区域 -->
         <div class="image-container">
-          <!-- 背景图片（带缺口） -->
+          <!-- 背景容器 -->
           <div 
-            class="background-image" 
-            ref="bgContainer"
+            class="background-container"
             :style="{ 
-              width: imageWidth + 'px',
-              height: imageHeight + 'px'
+              width: IMAGE_WIDTH + 'px'
             }"
           >
-            <img 
-              :src="backgroundImage" 
-              alt="背景图片"
-              @load="onBackgroundLoad"
-              draggable="false"
-            />
-            <!-- 缺口参考线 -->
+            <!-- 刷新按钮放在右上角 -->
+            <div class="refresh-btn-wrapper" @click="refreshCaptcha">
+              <el-button 
+                circle 
+                size="small"
+                :disabled="loading || imageLoading"
+                class="refresh-btn"
+              >
+                <el-icon><Refresh /></el-icon>
+              </el-button>
+            </div>
+            
+            <!-- 背景图片加载遮罩 -->
+            <div v-if="imageLoading" class="background-loading-mask">
+              <el-icon class="loading-icon"><Loading /></el-icon>
+              <span>加载中...</span>
+            </div>
+            
+            <!-- 背景图片 -->
             <div 
-              class="gap-line" 
+              class="background-image-wrapper"
+              ref="bgContainer"
               :style="{ 
-                left: (gapX - 1) + 'px',
-                top: startY + 'px'
+                width: IMAGE_WIDTH + 'px',
+                height: IMAGE_HEIGHT + 'px'
               }"
-            ></div>
+            >
+              <!-- 背景图片 -->
+              <div 
+                class="background-image"
+                :style="{
+                  backgroundImage: `url(${backgroundImage})`,
+                  backgroundSize: IMAGE_WIDTH + 'px ' + IMAGE_HEIGHT + 'px'
+                }"
+              ></div>
+              
+              <!-- 服务器返回的滑块图片 -->
+              <div 
+                class="slider-image"
+                ref="sliderImageRef"
+                :style="{
+                  backgroundImage: `url(${sliderImage})`,
+                  backgroundSize: '100% 100%',
+                  left: sliderImageLeft + 'px',
+                  top: sliderImageTop + 'px',
+                  width: sliderWidth + 'px',
+                  height: sliderHeight + 'px',
+                  pointerEvents: 'none'
+                }"
+              ></div>
+            </div>
           </div>
 
-          <!-- 滑块 -->
+          <!-- 滑块轨道区域 -->
           <div 
             class="slider-container"
             :style="{ 
-              width: imageWidth + 'px',
-              height: sliderHeight + 'px'
+              width: IMAGE_WIDTH + 'px',
+              height: '50px',
+              marginTop: '20px'
             }"
           >
-            <!-- 滑块轨道 -->
-            <div class="slider-track">
-              <!-- 滑块按钮 -->
+            <!-- 失败过多重试状态 -->
+            <div 
+              v-if="failCount >= MAX_FAIL_COUNT" 
+              class="slider-retry-state"
+              @click="resetFailState"
+            >
+              <div class="retry-content">
+                <el-icon class="error-icon"><CircleCloseFilled /></el-icon>
+                <span>失败过多，点此重试</span>
+              </div>
+            </div>
+            
+            <!-- 正常滑块轨道 -->
+            <div 
+              v-else
+              class="slider-track"
+              :class="{ 
+                'track-loading': loading || imageLoading,
+                'track-success': isVerified,
+                'track-error': verifyError && !isDragging
+              }"
+            >
+              <!-- ===== 新增：滑块划过路径背景 ===== -->
+              <div 
+                class="slider-path"
+                :style="{ 
+                  width: sliderPathWidth + 'px',
+                  backgroundColor: pathBackgroundColor
+                }"
+              ></div>
+              
+              <!-- 轨道文字 - 根据状态动态显示 -->
+              <div 
+                class="track-text" 
+                v-if="shouldShowTrackText"
+              >
+                {{ trackText }}
+              </div>
+              
+              <!-- 滑块按钮（手柄） -->
               <div 
                 class="slider-button"
                 ref="sliderButton"
-                :style="{ left: sliderPosition + 'px' }"
+                :class="{
+                  'dragging': isDragging,
+                  'error-state': verifyError && !isDragging,
+                  'success-state': isVerified
+                }"
+                :style="{ left: sliderButtonLeft + 'px' }"
                 @mousedown="startDrag"
                 @touchstart="startDrag"
               >
                 <div class="slider-icon">
-                  <el-icon><Right /></el-icon>
-                </div>
-                <div class="slider-text">
-                  向右拖动
+                  <el-icon v-if="verifyError && !isDragging"><Close /></el-icon>
+                  <el-icon v-else-if="isVerified"><Check /></el-icon>
+                  <el-icon v-else><Right /></el-icon>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- 操作按钮 -->
-        <div class="captcha-actions">
-          <div class="actions-left">
-            <el-button 
-              text 
-              @click="refreshCaptcha"
-              :disabled="loading"
-            >
-              <el-icon><Refresh /></el-icon>
-              换一张
-            </el-button>
-          </div>
-          <div class="actions-right">
-            <el-button @click="handleClose" :disabled="loading">
-              取消
-            </el-button>
-            <el-button 
-              type="primary" 
-              @click="handleVerify"
-              :loading="verifying"
-              :disabled="!canVerify || verifying"
-            >
-              {{ verifying ? '验证中...' : '验证' }}
-            </el-button>
-          </div>
-        </div>
       </div>
-
-      <!-- 遮罩层（显示滑块图片） -->
-      <div 
-        class="slider-overlay" 
-        ref="sliderOverlay"
-        :style="{ 
-          backgroundImage: `url(${sliderImage})`,
-          left: sliderPosition + 'px',
-          top: overlayTop + 'px',
-          width: sliderSize + 'px',
-          height: sliderSize + 'px'
-        }"
-        v-show="isDragging"
-      ></div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ElMessage, ElLoading } from 'element-plus'
-import { Close, Right, Refresh } from '@element-plus/icons-vue'
-import { generateSliderCaptcha, validateSliderCaptcha } from '@/api/captcha'
+import { ElMessage } from 'element-plus'
+import { Close, Right, Refresh, Loading, Check, CircleCloseFilled } from '@element-plus/icons-vue'
+import { generateSliderCaptcha, verifySliderCaptcha } from '@/api/captcha'
+import { computed, ref, watch, onMounted } from 'vue'
 
 const emits = defineEmits(['update:visible', 'success', 'failed'])
 
@@ -129,60 +161,136 @@ const props = defineProps({
     type: Boolean,
     required: true
   },
-  // 是否在验证成功后自动关闭
   autoClose: {
     type: Boolean,
     default: true
   }
 })
 
-// 响应式数据
-const visible = ref(props.visible)
-
-// 图片尺寸
-const imageWidth = 300
-const imageHeight = 200
-const sliderSize = 60
-const sliderHeight = 50
-const overlayTop = 50 // 滑块覆盖层的垂直位置
+// 使用后端原始尺寸（必须与后端代码一致）
+const IMAGE_WIDTH = 320  // 后端 IMAGE_WIDTH
+const IMAGE_HEIGHT = 160 // 后端 IMAGE_HEIGHT
+const SLIDER_SIZE = 40   // 后端 SLIDER_SIZE
+const SLIDER_BUTTON_WIDTH = 40 // 滑块手柄宽度
+const MAX_FAIL_COUNT = 6 // 最大失败次数
 
 // 验证码数据
 const captchaId = ref('')
 const backgroundImage = ref('')
 const sliderImage = ref('')
-const startY = ref(50) // 缺口起始Y坐标
-const gapX = ref(0) // 缺口X坐标（从服务器获取，这里初始为0）
-const sliderPosition = ref(0) // 滑块当前位置
+const startY = ref(0) // 缺口起始Y坐标
+const sliderWidth = ref(SLIDER_SIZE) // 滑块实际宽度
+const sliderHeight = ref(SLIDER_SIZE) // 滑块实际高度
+
+// 计算凸起部分的偏移量
+const extraWidth = computed(() => (sliderWidth.value - SLIDER_SIZE) / 2) // 右侧凸起宽度
+
+// 滑块图片左上角的X坐标 - 初始为负值，向左偏移右侧凸起宽度
+const sliderImageLeft = ref(-extraWidth.value)
+
+// 滑块图片的Y坐标 - 需要减去顶部凸起高度
+const sliderImageTop = computed(() => startY.value - (sliderHeight.value - SLIDER_SIZE) / 2)
+
+// 计算滑块按钮的左边距（手柄位置）- 按钮应该与滑块正方形部分对齐
+const sliderButtonLeft = computed(() => {
+  // 滑块正方形部分的左边缘位置 = sliderImageLeft + extraWidth
+  const squareLeft = sliderImageLeft.value + extraWidth.value
+  return Math.max(0, Math.min(squareLeft, IMAGE_WIDTH - SLIDER_BUTTON_WIDTH))
+})
+
+// ===== 新增：计算滑块划过路径的宽度 =====
+const sliderPathWidth = computed(() => {
+  // 滑块按钮的中心位置作为路径终点
+  const buttonCenter = sliderButtonLeft.value + SLIDER_BUTTON_WIDTH / 2
+  return Math.max(0, Math.min(buttonCenter, IMAGE_WIDTH))
+})
+
+// ===== 新增：计算路径背景色 =====
+const pathBackgroundColor = computed(() => {
+  // 验证成功 - 绿色
+  if (isVerified.value) {
+    return 'rgba(82, 196, 26, 0.2)'
+  }
+  // 验证失败且不是拖拽中 - 浅红色
+  if (verifyError.value && !isDragging.value) {
+    return 'rgba(255, 77, 79, 0.2)'
+  }
+  // 拖拽中或默认状态 - 浅蓝色
+  return 'rgba(24, 144, 255, 0.15)'
+})
 
 // 状态
 const loading = ref(false)
+const imageLoading = ref(false) // 背景图片加载状态
 const verifying = ref(false)
 const isDragging = ref(false)
 const isVerified = ref(false)
+const verifyError = ref(false) // 验证错误状态
+const failCount = ref(0) // 连续失败次数
+const isResetting = ref(false) // 是否正在重置
+
+// 判断是否应该显示轨道文字
+const shouldShowTrackText = computed(() => {
+  // 拖拽时不显示
+  if (isDragging.value) return false
+  // 加载中不显示
+  if (loading.value || imageLoading.value || isResetting.value) return false
+  // 滑块没有回到初始位置时不显示（加1像素容差）
+  if (sliderImageLeft.value > -extraWidth.value + 1) return false
+  return true
+})
+
+// 轨道文字
+const trackText = computed(() => {
+  if (isVerified.value) {
+    return '验证成功'
+  }
+  return '向右拖动滑块填充拼图'
+})
 
 // DOM引用
 const bgContainer = ref<HTMLElement>()
 const sliderButton = ref<HTMLElement>()
-const sliderOverlay = ref<HTMLElement>()
+const sliderImageRef = ref<HTMLElement>()
+
+// 拖拽变量
+let dragStartX = 0
+let dragStartSliderLeft = 0
+let resetTimer: ReturnType<typeof setTimeout> | null = null
 
 // 计算属性
 const canVerify = computed(() => {
-  return sliderPosition.value > 0 && !isVerified.value
+  const squareLeft = sliderImageLeft.value + extraWidth.value
+  return squareLeft > 0 && !isVerified.value && !verifying.value && !verifyError.value && failCount.value < MAX_FAIL_COUNT
+})
+
+// 监听滑块图片位置变化
+watch(sliderImageLeft, (newPosition) => {
+  if (sliderImageRef.value) {
+    sliderImageRef.value.style.left = newPosition + 'px'
+  }
+})
+
+// 监听extraWidth变化，确保滑块位置正确
+watch(extraWidth, (newExtraWidth) => {
+  // 只有在非拖拽状态下才自动复位
+  if (!isDragging.value) {
+    sliderImageLeft.value = -newExtraWidth
+  }
 })
 
 // 监听visible变化
 watch(() => props.visible, (val) => {
-  visible.value = val
   if (val && !isVerified.value) {
-    // 每次显示时重新获取验证码
+    resetFailState()
     fetchCaptcha()
   }
 })
 
 // 关闭弹窗
 const handleClose = () => {
-  visible.value = false
   emits('update:visible', false)
+  clearResetTimer()
   resetState()
 }
 
@@ -190,65 +298,93 @@ const handleClose = () => {
 const fetchCaptcha = async () => {
   try {
     loading.value = true
+    imageLoading.value = true
+    isResetting.value = true
+    verifyError.value = false
+    
     const data = await generateSliderCaptcha()
     captchaId.value = data.captchaId
     backgroundImage.value = data.backgroundImage
     sliderImage.value = data.sliderImage
-    startY.value = data.startY
+    startY.value = data.startY || 40
     
-    // 重置滑块位置
-    sliderPosition.value = 0
+    // 使用后端返回的实际滑块尺寸
+    sliderWidth.value = data.sliderWidth || SLIDER_SIZE
+    sliderHeight.value = data.sliderHeight || SLIDER_SIZE
+    
+    // 重置滑块位置 - 滑块图片向左偏移右侧凸起宽度
+    sliderImageLeft.value = -extraWidth.value
     isVerified.value = false
-    
-    ElMessage.success('验证码已刷新')
   } catch (error: any) {
+    // 错误提示已在全局拦截中处理
   } finally {
     loading.value = false
+    imageLoading.value = false
+    // 延迟关闭重置状态，确保滑块位置已经更新
+    setTimeout(() => {
+      isResetting.value = false
+    }, 50)
   }
-}
-
-// 背景图片加载完成
-const onBackgroundLoad = () => {
-  // 这里可以添加一些初始化逻辑
-  console.log('背景图片加载完成')
 }
 
 // 开始拖拽
 const startDrag = (e: MouseEvent | TouchEvent) => {
-  if (isVerified.value || loading.value) return
+  if (isVerified.value || loading.value || imageLoading.value || verifyError.value || failCount.value >= MAX_FAIL_COUNT) return
   
   e.preventDefault()
+  e.stopPropagation()
   isDragging.value = true
+  verifyError.value = false // 开始拖拽时清除错误状态
   
-  const startX = getClientX(e)
-  const initialPosition = sliderPosition.value
+  // 记录起始位置
+  dragStartX = getClientX(e)
+  dragStartSliderLeft = sliderImageLeft.value
+  
+  // 添加拖拽样式
+  if (sliderButton.value) {
+    sliderButton.value.classList.add('dragging')
+  }
   
   const onMove = (moveEvent: MouseEvent | TouchEvent) => {
     if (!isDragging.value) return
     
+    moveEvent.preventDefault()
+    
     const currentX = getClientX(moveEvent)
-    const containerLeft = bgContainer.value?.getBoundingClientRect().left || 0
-    const deltaX = currentX - startX
+    const deltaX = currentX - dragStartX
     
-    // 计算新位置，限制在有效范围内
-    let newPosition = initialPosition + deltaX
-    newPosition = Math.max(0, Math.min(newPosition, imageWidth - sliderSize))
+    // 计算新位置
+    let newPosition = dragStartSliderLeft + deltaX
     
-    sliderPosition.value = newPosition
+    // 限制滑块不能超出背景图片
+    const minPosition = -extraWidth.value
+    const maxPosition = IMAGE_WIDTH - sliderWidth.value
+    newPosition = Math.max(minPosition, Math.min(newPosition, maxPosition))
     
-    // 更新滑块覆盖层位置
-    if (sliderOverlay.value) {
-      sliderOverlay.value.style.left = newPosition + 'px'
-    }
+    // 平滑更新位置
+    requestAnimationFrame(() => {
+      sliderImageLeft.value = newPosition
+    })
   }
   
-  const onEnd = () => {
+  const onEnd = async () => {
     isDragging.value = false
+    
+    // 移除拖拽样式
+    if (sliderButton.value) {
+      sliderButton.value.classList.remove('dragging')
+    }
     
     document.removeEventListener('mousemove', onMove as EventListener)
     document.removeEventListener('touchmove', onMove as EventListener)
     document.removeEventListener('mouseup', onEnd)
     document.removeEventListener('touchend', onEnd)
+    
+    // 拖拽结束时自动验证
+    const squareLeft = sliderImageLeft.value + extraWidth.value
+    if (squareLeft > 0) {
+      await handleVerify()
+    }
   }
   
   document.addEventListener('mousemove', onMove as EventListener)
@@ -260,7 +396,7 @@ const startDrag = (e: MouseEvent | TouchEvent) => {
 // 获取客户端X坐标
 const getClientX = (e: MouseEvent | TouchEvent): number => {
   if ('touches' in e) {
-    return e.touches[0]?.clientX!
+    return e.touches[0]?.clientX || 0
   }
   return e.clientX
 }
@@ -271,29 +407,56 @@ const handleVerify = async () => {
   
   try {
     verifying.value = true
+    verifyError.value = false
+    
+    // 计算实际的缺口位置 - 滑块正方形部分的左边缘
+    const actualSliderX = sliderImageLeft.value + extraWidth.value
     
     const params = {
       captchaId: captchaId.value,
-      sliderDistance: sliderPosition.value
+      sliderDistance: Math.round(actualSliderX)
     }
     
-    await validateSliderCaptcha(params)
-     isVerified.value = true
-      ElMessage.success('验证成功')
-      
-      // 触发成功事件
-      emits('success', captchaId.value)
-      
-      if (props.autoClose) {
-        setTimeout(() => {
-          handleClose()
-        }, 500)
-      }
+    await verifySliderCaptcha(params)
+    ElMessage.success("验证成功")
+    // 验证成功
+    isVerified.value = true
+    verifyError.value = false
+    failCount.value = 0 // 重置失败次数
+
+    // 触发成功事件
+    emits('success', captchaId.value)
+    
+    if (props.autoClose) {
+      setTimeout(() => {
+        emits('update:visible', false)
+      }, 500)
+    }
+    
   } catch (error: any) {
+    // 验证失败
+    isVerified.value = false
+    verifyError.value = true
+    failCount.value++ // 增加失败次数
+    
+    // 触发失败事件
     emits('failed')
-// 验证失败，重置并刷新验证码
-      resetState()
-      fetchCaptcha()
+    
+    // 如果达到最大失败次数，不自动重置
+    if (failCount.value >= MAX_FAIL_COUNT) {
+      verifyError.value = false
+      return
+    }
+    
+    // 延迟重置状态 - 400ms，让用户能看到错误状态但不会等待太久
+    clearResetTimer()
+    resetTimer = setTimeout(() => {
+      if (!isDragging.value && !isVerified.value) {
+        resetState()
+        fetchCaptcha()
+      }
+    }, 300)
+    
   } finally {
     verifying.value = false
   }
@@ -301,19 +464,40 @@ const handleVerify = async () => {
 
 // 刷新验证码
 const refreshCaptcha = () => {
+  if (loading.value || imageLoading.value) return
+  clearResetTimer()
+  resetState()
+  fetchCaptcha()
+}
+
+// 重置失败状态
+const resetFailState = () => {
+  failCount.value = 0
+  verifyError.value = false
   resetState()
   fetchCaptcha()
 }
 
 // 重置状态
 const resetState = () => {
-  sliderPosition.value = 0
+  sliderImageLeft.value = -extraWidth.value
   isVerified.value = false
   isDragging.value = false
+  verifyError.value = false
+}
+
+// 清除定时器
+const clearResetTimer = () => {
+  if (resetTimer) {
+    clearTimeout(resetTimer)
+    resetTimer = null
+  }
 }
 
 // 初始化时获取验证码
-fetchCaptcha()
+onMounted(() => {
+  fetchCaptcha()
+})
 </script>
 
 <style scoped lang="scss">
@@ -323,18 +507,18 @@ fetchCaptcha()
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 10;
   backdrop-filter: blur(2px);
 }
 
 .captcha-content {
   background: var(--header-bg);
   border-radius: var(--radius-large);
-  width: 400px;
+  width: 380px;
   box-shadow: var(--shadow-heavy);
   animation: slideIn 0.3s ease;
   overflow: hidden;
@@ -381,133 +565,243 @@ fetchCaptcha()
   padding: 20px;
 }
 
-.captcha-tips {
-  text-align: center;
-  margin-bottom: 20px;
+.image-container {
+  margin-bottom: 0;
+}
+
+.background-container {
+  position: relative;
+  margin: 0 auto 20px;
   
-  p {
-    margin: 0;
-    color: var(--text-regular);
-    font-size: 14px;
+  .refresh-btn-wrapper {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
     
-    &:first-child {
-      font-weight: 500;
-      color: var(--text-primary);
-      margin-bottom: 4px;
+    .refresh-btn {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--border-color);
+      
+      &:hover {
+        background: white;
+        border-color: var(--ecommerce-primary);
+      }
+      
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+  
+  .background-loading-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    border-radius: var(--radius-medium);
+    
+    .loading-icon {
+      font-size: 24px;
+      color: var(--ecommerce-primary);
+      animation: rotating 1s linear infinite;
+      margin-bottom: 8px;
+    }
+    
+    span {
+      color: var(--text-secondary);
+      font-size: 12px;
     }
   }
 }
 
-.image-container {
-  margin-bottom: 20px;
-}
-
-.background-image {
+.background-image-wrapper {
   position: relative;
-  margin: 0 auto;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-medium);
   overflow: hidden;
   background: #f8f9fa;
   
-  img {
+  .background-image {
     width: 100%;
     height: 100%;
-    display: block;
+    background-repeat: no-repeat;
+    background-position: center;
     pointer-events: none;
     user-select: none;
   }
   
-  .gap-line {
+  .slider-image {
     position: absolute;
-    width: 2px;
-    height: 60px;
-    background: rgba(24, 144, 255, 0.3);
     pointer-events: none;
+    z-index: 1;
+    transition: left 0.1s ease;
+    border: none;
+    box-shadow: none;
   }
 }
 
 .slider-container {
-  margin: 20px auto 0;
+  margin: 0 auto;
+}
+
+.slider-retry-state {
+  width: 100%;
+  height: 44px;
+  background: #fff1f0;
+  border: 1px solid #ffa39e;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #ffccc7;
+    border-color: #ff7875;
+  }
+  
+  .retry-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    .error-icon {
+      font-size: 18px;
+      color: #f5222d;
+    }
+    
+    span {
+      color: #cf1322;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
 }
 
 .slider-track {
   position: relative;
-  height: 40px;
+  height: 44px;
   background: #f5f7fa;
   border: 1px solid var(--border-color);
-  border-radius: 20px;
+  border-radius: 4px;
   overflow: hidden;
-}
-
-.slider-button {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 60px;
-  height: 40px;
-  background: linear-gradient(135deg, var(--ecommerce-primary), var(--ecommerce-secondary));
-  border-radius: 20px;
-  cursor: grab;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
-  transition: background 0.3s, transform 0.1s;
-  z-index: 2;
   
-  &:hover {
-    background: linear-gradient(135deg, #1890ff, #36cfc9);
+  &.track-loading {
+    background: #f0f2f5;
+    opacity: 0.8;
   }
   
-  &:active {
-    cursor: grabbing;
-    transform: scale(0.98);
+  /* ===== 新增：滑块划过路径背景 ===== */
+  .slider-path {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background-color: rgba(24, 144, 255, 0.15);
+    transition: width 0.1s ease, background-color 0.2s ease;
+    pointer-events: none;
+    z-index: 1;
   }
   
-  .slider-icon {
-    color: white;
-    font-size: 18px;
-    margin-right: 4px;
+  /* ===== 新增：验证成功时的路径背景色 ===== */
+  &.track-success .slider-path {
+    background-color: rgba(82, 196, 26, 0.2);
   }
   
-  .slider-text {
-    color: white;
-    font-size: 12px;
-    font-weight: 500;
+  /* ===== 新增：验证失败时的路径背景色 ===== */
+  &.track-error .slider-path {
+    background-color: rgba(255, 77, 79, 0.2);
   }
-}
-
-.captcha-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 20px;
   
-  .actions-left {
-    .el-button {
-      color: var(--text-secondary);
+  .track-text {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+    pointer-events: none;
+    user-select: none;
+    transition: opacity 0.2s ease;
+    z-index: 3; /* 确保文字在路径上方 */
+  }
+  
+  .slider-button {
+    position: absolute;
+    top: 2px;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--ecommerce-primary), var(--ecommerce-secondary));
+    border-radius: 4px;
+    cursor: grab;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(24, 144, 255, 0.3);
+    transition: all 0.1s ease;
+    z-index: 4; /* 按钮层级最高 */
+    
+    &:hover {
+      background: linear-gradient(135deg, #1890ff, #36cfc9);
+    }
+    
+    &.dragging {
+      cursor: grabbing;
+      transform: scale(0.98);
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+    }
+    
+    &.error-state {
+      background: linear-gradient(135deg, #ff4d4f, #ff7875);
+      box-shadow: 0 2px 6px rgba(255, 77, 79, 0.3);
       
       &:hover {
-        color: var(--ecommerce-primary);
-      }
-      
-      .el-icon {
-        margin-right: 4px;
+        background: linear-gradient(135deg, #ff4d4f, #ff7875);
       }
     }
-  }
-  
-  .actions-right {
-    display: flex;
-    gap: 10px;
+    
+    &.success-state {
+      background: linear-gradient(135deg, #52c41a, #73d13d);
+      box-shadow: 0 2px 6px rgba(82, 196, 26, 0.3);
+      
+      &:hover {
+        background: linear-gradient(135deg, #52c41a, #73d13d);
+      }
+    }
+    
+    .slider-icon {
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   }
 }
 
-.slider-overlay {
-  position: fixed;
-  border-radius: 50%;
-  border: 2px solid var(--ecommerce-primary);
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
