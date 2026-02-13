@@ -54,6 +54,7 @@ service.interceptors.response.use(
     const status = error.response.status
     if (status === 401) {
       localStorage.removeItem('access-token')
+      window.location.href = '/login'
     }
     ElMessage({
       message,

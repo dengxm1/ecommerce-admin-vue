@@ -26,13 +26,19 @@
             <template v-for="list in sidebarList">
                 <el-sub-menu v-if="list.children"  :index="list.path">
                     <template #title>
-                        <el-icon><Goods /></el-icon>
+                        <el-icon>
+                            <component :is="getIconComponent(list.meta?.icon)" />
+                        </el-icon>
                         <span>{{ list.meta?.title }}</span>
                     </template>
-                    <el-menu-item v-for="child in list.children" :index="child.path">{{ child.meta?.title }}</el-menu-item>
+                    <el-menu-item v-for="child in list.children" :index="child.path">
+                        {{ child.meta?.title }}
+                    </el-menu-item>
                 </el-sub-menu>
                  <el-menu-item v-else :index="list.path">
-                    <el-icon><Histogram /></el-icon>
+                    <el-icon>
+                        <component :is="getIconComponent(list.meta?.icon)" />
+                    </el-icon>
                     <span>{{ list.meta?.title }}</span>
                 </el-menu-item>
             </template>
@@ -43,8 +49,8 @@
             <div class="user-info">
                 <el-avatar :size="36" :src="userAvatar" />
                 <div class="user-detail">
-                    <div class="username">管理员</div>
-                    <div class="user-role">超级管理员</div>
+                    <div class="username">{{ userInfo.nickname|| userInfo.username }}</div>
+                    <div class="user-role">{{userInfo.roleNames}}</div>
                 </div>
             </div>
         </div>
@@ -55,26 +61,28 @@
 import {usePermissionStore} from '@/stores/permission'
 import type {FrontendRoute} from '@/utils/routeUtils'
 // Element Plus 图标
-import { Histogram, Goods} from '@element-plus/icons-vue';
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user';
 
+const userStore = useUserStore();
 const route = useRoute();
-const activeMenu = ref(route.path);
-const userAvatar = ref('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png');
-const permissionStore = usePermissionStore(); 
-const sidebarList = computed(() => {
-    const dashboard:FrontendRoute  = {
-        path: '/dashboard',
-        name: 'dashboard',
-        meta:{
-            title: '概览',
-            hidden: false,
-        },
-        }
-    return [dashboard,...permissionStore.sidebarRoutes]
+const activeMenu = computed(() => route.path);
+const userAvatar = computed(() =>{
+    return userStore.userInfo.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
 })
-
+const userInfo = computed(() => userStore.userInfo)
+const permissionStore = usePermissionStore(); 
+const sidebarList = computed(() => permissionStore.sidebarRoutes)
 const handleSelect = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)
+}
+
+const getIconComponent = (iconName?: string) => {
+    const defaultIcon = 'Goods'
+    if (!iconName) {
+        return ElementPlusIconsVue[defaultIcon]
+    }
+    return ElementPlusIconsVue[iconName as keyof typeof ElementPlusIconsVue] || ElementPlusIconsVue[defaultIcon]
 }
 
 </script>

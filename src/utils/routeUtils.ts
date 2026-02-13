@@ -98,6 +98,7 @@ export function transformMenuToSidebar(menuList: BackendMenuItem[]): FrontendRou
         return (aItem?.sort || 0) - (bItem?.sort || 0)
     })
     const rootRoutes = createSidebar(sidebarList);
+    console.log('生成的侧边栏rootRoutes==',rootRoutes)
     return rootRoutes
 }
 // 将侧边栏菜单项转换成路由格式
@@ -173,7 +174,6 @@ export function addRoutesToHome(router: any, routes: FrontendRoute[]) {
         console.log('路由添加失败==',error)
     }
   })
-  console.log('生成的路由router.getRoutes()==',router.getRoutes())
 }
 
 /**

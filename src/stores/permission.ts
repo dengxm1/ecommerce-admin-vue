@@ -4,7 +4,15 @@ import {getUserMenu, getPermissionsListApi} from '@/api/auth'
 import router from '@/router/index'
 import { transformMenuToRoutes, addRoutesToHome,transformMenuToSidebar,type BackendMenuItem} from '@/utils/routeUtils'
 import {type FrontendRoute} from '@/utils/routeUtils'
-
+const dashboard:FrontendRoute  = {
+    path: '/dashboard',
+    name: 'dashboard',
+    meta:{
+        title: '概览',
+        hidden: false,
+        icon: 'Histogram'
+    },
+}
 export const usePermissionStore = defineStore("permission",() => {
     const routes = ref([]); //后端返回的原始菜单列表
     const sidebarRoutes= ref<FrontendRoute[]>([]); //侧边栏导航
@@ -50,7 +58,7 @@ export const usePermissionStore = defineStore("permission",() => {
 
         return list;
     })
-         // 获取用户菜单项
+    // 获取用户菜单项
     const generateRoutes = async () => {
         try {
             const res = await getUserMenu()
@@ -61,7 +69,7 @@ export const usePermissionStore = defineStore("permission",() => {
             addRoutesToHome(router, frontendRoutes)
             // 生成侧边栏导航
             const sidebarList = transformMenuToSidebar(JSON.parse(JSON.stringify(res.data)));
-            sidebarRoutes.value = sidebarList
+            sidebarRoutes.value = [dashboard, ...sidebarList]
             return res
         } catch (error) {
             console.error('获取用户权限菜单失败:', error)

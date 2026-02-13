@@ -107,7 +107,7 @@
                       size="small"
                       link
                       @click="handleAssignPermission(row)"
-                      :disabled="row.isSystem && row.code == 'TENANT_SUPER_ADMIN'"
+                      :disabled="row.isSystem==1 && row.code == 'TENANT_SUPER_ADMIN'"
                     >
                       分配权限
                     </el-button>
@@ -118,7 +118,7 @@
                       size="small"
                       link
                       @click="handleEdit(row)"
-                      :disabled="row.isSystem && row.code == 'TENANT_SUPER_ADMIN'"
+                      :disabled="row.isSystem==1 && row.code == 'TENANT_SUPER_ADMIN'"
                     >
                       编辑
                     </el-button>
@@ -149,10 +149,10 @@
                           command="delete" 
                           divided
                           :icon="Delete"
-                          :disabled="row.isSystem"
+                          :disabled="row.isSystem==1"
                           class="delete-item"
                         >
-                          <span :style="{ color: row.isSystem ? '#909399' : 'var(--danger-color)' }">
+                          <span :style="{ color: row.isSystem==1? '#909399' : 'var(--danger-color)' }">
                             删除
                           </span>
                         </el-dropdown-item>

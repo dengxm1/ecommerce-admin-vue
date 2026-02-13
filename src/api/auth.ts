@@ -76,3 +76,11 @@ export function checkedPhoneUniqueApi(data: {phone: string}): Promise<BaseRespon
     data
   })
 }
+
+// 概览数据统计
+export function getDashboardStatsApi() {
+  return request({
+    url: '/system/auth/dashboard/stats',
+    method: 'get'
+  })
+}

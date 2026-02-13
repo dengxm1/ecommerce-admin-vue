@@ -4,10 +4,17 @@ import {getUserInfo,login as loginApi, loginByPhone as loginByPhoneApi} from '@/
 import type{ loginParams} from '@/types/apiType'
 import { ElMessage } from 'element-plus'
 import { useTabsStore } from './tabs'
+import {getDashboardStatsApi} from '@/api/auth'
 
+interface stats{
+    userCount: number,
+    roleCount: number,
+    permissionCount: number
+}  
 export const useUserStore = defineStore('user',()=>{
     const router = useRouter()
     const userInfo = ref()
+    const dashboardStats = ref<stats| null>(null)
     const tabsStore = useTabsStore()
     // 用户登录
     const login = async (data:loginParams) => {
@@ -41,6 +48,17 @@ export const useUserStore = defineStore('user',()=>{
             throw error
         }
     }
+    // 获取概览数据统计
+    const getDashboardStats =  async () => {
+         try {
+            const res = await getDashboardStatsApi()
+            dashboardStats.value = res.data
+            return res
+        } catch (error) {
+            console.error('获取用户信息失败:', error)
+            throw error
+        }
+    }
     // 清除用户信息
     const clearUserInfo = () => {
         tabsStore.resetTab()
@@ -58,10 +76,12 @@ export const useUserStore = defineStore('user',()=>{
     }
     return {
         userInfo,
+        dashboardStats,
         logout,
         login,
         loginByPhone,
         clearUserInfo,
-        fetchUserInfo
+        fetchUserInfo,
+        getDashboardStats
     }
 })

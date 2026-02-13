@@ -104,7 +104,7 @@
                 'track-error': verifyError && !isDragging
               }"
             >
-              <!-- ===== 新增：滑块划过路径背景 ===== -->
+              <!-- =====滑块划过路径背景 ===== -->
               <div 
                 class="slider-path"
                 :style="{ 
@@ -198,14 +198,14 @@ const sliderButtonLeft = computed(() => {
   return Math.max(0, Math.min(squareLeft, IMAGE_WIDTH - SLIDER_BUTTON_WIDTH))
 })
 
-// ===== 新增：计算滑块划过路径的宽度 =====
+// ===== 计算滑块划过路径的宽度 =====
 const sliderPathWidth = computed(() => {
   // 滑块按钮的中心位置作为路径终点
   const buttonCenter = sliderButtonLeft.value + SLIDER_BUTTON_WIDTH / 2
   return Math.max(0, Math.min(buttonCenter, IMAGE_WIDTH))
 })
 
-// ===== 新增：计算路径背景色 =====
+// ===== 计算路径背景色 =====
 const pathBackgroundColor = computed(() => {
   // 验证成功 - 绿色
   if (isVerified.value) {
@@ -281,8 +281,7 @@ watch(extraWidth, (newExtraWidth) => {
 
 // 监听visible变化
 watch(() => props.visible, (val) => {
-  if (val && !isVerified.value) {
-    resetFailState()
+  if (val) {
     fetchCaptcha()
   }
 })
@@ -418,12 +417,11 @@ const handleVerify = async () => {
     }
     
     await verifySliderCaptcha(params)
-    ElMessage.success("验证成功")
+    // ElMessage.success("验证成功")
     // 验证成功
     isVerified.value = true
     verifyError.value = false
     failCount.value = 0 // 重置失败次数
-
     // 触发成功事件
     emits('success', captchaId.value)
     
@@ -701,7 +699,7 @@ onMounted(() => {
     opacity: 0.8;
   }
   
-  /* ===== 新增：滑块划过路径背景 ===== */
+  /* ===== 滑块划过路径背景 ===== */
   .slider-path {
     position: absolute;
     left: 0;
@@ -713,12 +711,12 @@ onMounted(() => {
     z-index: 1;
   }
   
-  /* ===== 新增：验证成功时的路径背景色 ===== */
+  /* =====验证成功时的路径背景色 ===== */
   &.track-success .slider-path {
     background-color: rgba(82, 196, 26, 0.2);
   }
   
-  /* ===== 新增：验证失败时的路径背景色 ===== */
+  /* ===== 验证失败时的路径背景色 ===== */
   &.track-error .slider-path {
     background-color: rgba(255, 77, 79, 0.2);
   }

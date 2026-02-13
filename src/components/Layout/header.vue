@@ -1,21 +1,20 @@
 <template>
     <el-header class="header-container">
         <view class="header-wrapper">
-            <!-- 左侧：面包屑和页面标题 -->
-        <div class="header-left">
-            <div class="page-title">
-                <el-icon class="title-icon"><component :is="currentPage.icon" /></el-icon>
-                <h1>{{ currentPage.title }}</h1>
-            </div>
-            <el-breadcrumb separator="/" class="breadcrumb">
-                <el-breadcrumb-item :to="{ path: '/' }">
-                    <el-icon><House /></el-icon> 首页
-                </el-breadcrumb-item>
-                <el-breadcrumb-item v-for="(item, index) in breadcrumbs" :key="index">
-                    {{ item }}
-                </el-breadcrumb-item>
-            </el-breadcrumb>
-        </div>
+        <!-- 左侧：面包屑和页面标题 -->
+       <div class="header-left">
+        <el-breadcrumb separator="/" class="breadcrumb">
+            <el-breadcrumb-item 
+                v-for="(item, index) in breadcrumbs" 
+                :key="index"
+            >
+            <el-icon v-if="index === 0 && item.icon">
+                <component :is="getIconComponent(item.icon)" />
+            </el-icon>
+            {{ item.title }}
+            </el-breadcrumb-item>
+        </el-breadcrumb>
+    </div>
         <!-- 右侧：工具和用户 -->
         <div class="header-right">
             <!-- 消息通知 -->
@@ -64,7 +63,7 @@
                 <div class="user-avatar">
                     <el-avatar :size="36" :src="userAvatar" />
                     <div class="user-info">
-                        <span class="username">{{ userInfo.nickname }}</span>
+                        <span class="username">{{ userInfo.nickname|| userInfo.username }}</span>
                         <el-icon><ArrowDown /></el-icon>
                     </div>
                 </div>
@@ -90,10 +89,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useUserStore } from '@/stores/user';
-
+import { usePermissionStore } from '@/stores/permission'; 
 // Element Plus 图标
 import {
-    House,
     Bell,
     CircleCheck,
     Warning,
@@ -102,33 +100,70 @@ import {
     ArrowDown,
     User,
     SwitchButton,
-    Histogram,
-    Goods,
-    Tickets
 } from '@element-plus/icons-vue';
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 const route = useRoute();
 const router = useRouter();
-const userAvatar = ref('https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png');
+const userAvatar = computed(() =>{
+    return userStore.userInfo.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+})
 
 const userStore = useUserStore();
 
 const userInfo = computed(() => userStore.userInfo)
 
-// 模拟当前页面信息
-const currentPage = computed(() => {
-    const path = route.path;
-    if (path.includes('dashboard')) return { title: '数据看板', icon: Histogram };
-    if (path.includes('product')) return { title: '商品管理', icon: Goods };
-    if (path.includes('order')) return { title: '订单管理', icon: Tickets };
-    return { title: '电商管理平台', icon: Histogram };
-});
+const permissionStore = usePermissionStore()
 
-// 模拟面包屑
+const getIconComponent = (iconName?: string) => {
+    const defaultIcon = 'Goods'
+    if (!iconName) {
+        return ElementPlusIconsVue[defaultIcon]
+    }
+    return ElementPlusIconsVue[iconName as keyof typeof ElementPlusIconsVue] || ElementPlusIconsVue[defaultIcon]
+}
+
+// 面包屑
 const breadcrumbs = computed(() => {
-    return route.path.split('/').filter(Boolean).map(item => 
-        item.charAt(0).toUpperCase() + item.slice(1)
-    );
+  const breadcrumbItems: { title: string; path: string; icon?: string }[] = [];
+  const currentPath = route.path;
+  
+  // 递归查找当前路径的父级链
+  const findPathChain = (routes: any[], parentChain: any[] = []): any[] | null => {
+    for (const item of routes) {
+
+      // 如果当前项匹配路径
+      if (item.path === currentPath) {
+        // 返回父级链 + 当前项
+        return [...parentChain, item];
+      }
+      
+      // 如果有子路由，递归查找
+      if (item.children && item.children.length > 0) {
+        const result = findPathChain(item.children, [...parentChain, item]);
+        if (result) return result;
+      }
+    }
+    return null;
+  };
+
+  // 获取从根到当前页面的所有路由项
+  const pathChain = findPathChain(permissionStore.sidebarRoutes, []);
+  
+  if (pathChain && pathChain.length > 0) {
+    pathChain.forEach((item, index) => {
+      // 如果是父节点（不是最后一个）或者是最后一个（当前页）
+      if (index < pathChain.length - 1 || index === pathChain.length - 1) {
+        breadcrumbItems.push({
+          title: item.meta.title,
+          path: item.path,
+          icon: index === 0 ? item.meta.icon : undefined
+        });
+      }
+    });
+  }
+  
+  return breadcrumbItems;
 });
 
 // 新增：路由跳转方法
@@ -220,7 +255,7 @@ const toggleTheme = () => {
         }
     }
     
-    .breadcrumb {
+   .breadcrumb {
         :deep(.el-breadcrumb__item) {
             .el-breadcrumb__inner {
                 display: flex;

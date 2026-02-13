@@ -25,6 +25,7 @@
 
     <!-- 用户表格区域 -->
       <ProTable 
+          rowId="id"
           :data="tableData" 
           :columns="columns"
           v-model:current-page="pagination.current"
@@ -35,6 +36,7 @@
           showAction
           stripe
           @paginationChange="paginationChange"
+          @handleSelectionChange="handleSelectionChange"
           >
             <template #table-header>
                 <div class="table-actions">
@@ -55,8 +57,8 @@
                   >
                     导出数据
                   </el-button>
-                  <span class="selected-count" v-if="selectedRows.length > 0">
-                    已选择 {{ selectedRows.length }} 项
+                  <span class="selected-count" v-if="selectedCount > 0">
+                    已选择 {{ selectedCount }} 项
                   </span>
                 </div>
                 <div class="actions-right">
@@ -345,12 +347,14 @@ const columns = ref<TableColumn[]>([
         prop: 'userInfo',
         label:'用户信息',
         slot:'userInfo',
-        sortable: true
+        sortable: true,
+        width: 200
     },
     {
         prop: 'linkInfo',
         label:'联系信息',
         slot:'linkInfo',
+        width: 200
     },
     {
         prop: 'role',
@@ -435,6 +439,9 @@ const permissionDrawer = reactive({
 // 计算属性
 const selectedCount = computed(() => selectedRows.value.length)
 
+// 选中的行的key值数组
+const selectedKeys = ref<(number)[]>([])
+
 
 // 搜索
 const handleSearch = () => {
@@ -482,8 +489,8 @@ const fetchUserList = async () => {
 }
 
 const handleSelectionChange = (rows: any[]) => {
-  console.log('rows===',rows)
   selectedRows.value = rows
+  selectedKeys.value = rows.map(item => item.id) 
 }
 
 const handleSortChange = (sort: any) => {
@@ -569,9 +576,10 @@ const handleBatchDelete = async () => {
         distinguishCancelAndClose: true
       }
     )
-    
+    await deleteUserApi(selectedKeys.value)
     ElMessage.success('删除成功')
     selectedRows.value = []
+    selectedKeys.value = []
     fetchUserList()
     
   } catch (error) {
@@ -599,6 +607,8 @@ const handleExport = async () => {
 }
 
 const refreshTable = () => {
+  selectedRows.value = []
+  selectedKeys.value = []
   fetchUserList()
 }
 

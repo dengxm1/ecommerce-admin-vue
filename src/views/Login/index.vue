@@ -88,7 +88,7 @@
                     type="primary"
                     size="large"
                     :loading="accountLoading"
-                    @click="handleAccountLogin"
+                    @click="showCaptcha"
                     class="login-btn"
                   >
                     {{ accountLoading ? '登录中...' : '登录' }}
@@ -128,7 +128,7 @@
                       v-model="phoneForm.captcha"
                       buttonText="获取验证码"
                       :disabled="countdown > 0"
-                      @send="sendCaptcha"
+                      @send="sliderCaptchaVisible2=true"
                   />
                 </el-form-item>
 
@@ -189,9 +189,10 @@
       width="450px"
       :close-on-click-modal="false"
     >
-      <forgot-password-form @success="handlePasswordResetSuccess" />
+      <forgot-password-form @success="handlePasswordResetSuccess"/>
     </el-dialog>
-    <slider-captcha v-model:visible="sliderCaptchaVisible"/>
+    <slider-captcha v-model:visible="sliderCaptchaVisible" @success="handleAccountLogin"/>
+    <slider-captcha v-model:visible="sliderCaptchaVisible2" @success="sendCaptcha"/>
   </div>
 </template>
 
@@ -210,7 +211,8 @@ const route = useRoute()
 const phoneCodeRef = ref()
 
 // 拼图验证码
-const sliderCaptchaVisible = ref(true);
+const sliderCaptchaVisible = ref(false);
+const sliderCaptchaVisible2 = ref(false)
 
 const redirect = route.query.redirect as string
 const otherQuery = Object.keys(route.query)
@@ -234,9 +236,9 @@ const showForgotPassword = ref(false)
 
 // 账号登录表单数据
 const accountForm = reactive({
-  tenantId: '1',
-  username: 'admin',
-  password: '123456',
+  tenantId: '',
+  username: '',
+  password: '',
   rememberMe: false
 })
 
@@ -307,6 +309,9 @@ const sendCaptcha = async () => {
   }
 }
 
+const showCaptcha = () => {
+  sliderCaptchaVisible.value = true
+}
 // 账号密码登录处理
 const handleAccountLogin = async () => {
   if (!accountFormRef.value) return
@@ -349,6 +354,7 @@ const handleAccountLogin = async () => {
 
 // 手机号登录处理
 const handlePhoneLogin = async () => {
+
   if (!phoneFormRef.value) return
   
   const valid = await phoneFormRef.value.validate()
