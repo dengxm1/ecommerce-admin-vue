@@ -46,6 +46,7 @@
                     :disabled="selectedRows.length === 0"
                     @click="handleBatchDelete"
                     class="batch-btn"
+                    v-permission="'system:user:batch-delete'"
                   >
                     批量删除
                   </el-button>
@@ -54,6 +55,7 @@
                     @click="handleExport"
                     class="export-btn"
                     :disabled="exportLoading"
+                    v-permission="'system:user:export'"
                   >
                     导出数据
                   </el-button>
@@ -127,6 +129,7 @@
                  <div class="action-buttons">
                   <el-tooltip content="查看详情" placement="top">
                     <el-button 
+                      v-permission="'system:user:view'"
                       type="info" 
                       :icon="View" 
                       size="small"
@@ -136,6 +139,7 @@
                   </el-tooltip>
                 <el-tooltip content="编辑" placement="top">
                   <el-button 
+                    v-permission="'system:user:edit'"
                     type="primary" 
                     :icon="Edit" 
                     size="small"
@@ -145,6 +149,7 @@
                 </el-tooltip>
                 <el-tooltip content="分配角色" placement="top">
                   <el-button 
+                    v-permission="'system:user:assign-roles'"
                     type="success" 
                     :icon="UserFilled" 
                     size="small"
@@ -165,21 +170,24 @@
                   <template #dropdown>
                     <el-dropdown-menu>
                       <el-dropdown-item 
+                       v-if="hasAnyPermission(['system:user:view-permission'])"
                         command="viewPermissions"
                       >
                         <el-icon><Lock /></el-icon>
                         <span>查看权限</span>
                       </el-dropdown-item>
                       <el-dropdown-item 
+                        v-if="hasAllPermission(['system:user:enable','system:user:disable'])"
                         command="toggleStatus"
                         divided
                       >
-                        <el-icon>
+                        <el-icon >
                           <component :is="row.isEnabled ? CircleClose : CircleCheck" />
                         </el-icon>
                         {{ row.isEnabled ? '禁用账户' : '启用账户' }}
                       </el-dropdown-item>
                       <el-dropdown-item 
+                        v-if="hasAnyPermission(['system:user:reset-password'])"
                         command="resetPassword"
                         divided
                       >
@@ -187,6 +195,7 @@
                         <span>重置密码</span>
                       </el-dropdown-item>
                       <el-dropdown-item 
+                        v-if="hasAnyPermission(['system:user:delete'])"
                         command="delete" 
                         divided
                         class="delete-item"
@@ -237,6 +246,11 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 import {getUserListApi,updateUserStatusApi,deleteUserApi, getUserPermissionIdsApi,exportUserDataApi} from '@/api/user'
+import { usePermissionStore } from '@/stores/permission'
+
+const permissionStore = usePermissionStore()
+const hasAnyPermission = (perm: string[]) => permissionStore.hasAnyPermission(perm)
+const hasAllPermission = (perm: string[]) => permissionStore.hasAllPermissions(perm)
 
 // 组件
 import UserFormDialog from './components/UserFormDialog.vue'

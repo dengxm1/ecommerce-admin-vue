@@ -41,8 +41,7 @@ export const setupPermissionGuard = (router: Router) => {
       if(!userStore.userInfo){
           await Promise.all([
             userStore.fetchUserInfo(),
-            permissionStore.generateRoutes(),
-            permissionStore.getUserPermissions()
+            permissionStore.generateRoutes()
         ])
         // 修复非概览页刷新页面路由丢失问题
         if (to.path !== '/' && to.path !== '/dashboard') {

@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import {getUserMenu, getPermissionsListApi} from '@/api/auth'
+import {getPermissionsListApi} from '@/api/auth'
+import {getSystemMenuApi} from '@/api/user'
 import router from '@/router/index'
 import { transformMenuToRoutes, addRoutesToHome,transformMenuToSidebar,type BackendMenuItem} from '@/utils/routeUtils'
 import {type FrontendRoute} from '@/utils/routeUtils'
@@ -14,19 +15,20 @@ const dashboard:FrontendRoute  = {
     },
 }
 export const usePermissionStore = defineStore("permission",() => {
-    const routes = ref([]); //后端返回的原始菜单列表
+    const menuList = ref([]); //系统菜单列表
+    const routes = ref([]); //通过权限列表筛选过后的用户权限菜单列表
     const sidebarRoutes= ref<FrontendRoute[]>([]); //侧边栏导航
     const userPermissionList = ref<string[]>([]); //用户权限标识列表
     // 用户菜单表和树状图
     const treeRoutes = computed<BackendMenuItem[]>(() => {
-        const data = JSON.parse(JSON.stringify(routes.value));
+        const data = JSON.parse(JSON.stringify(menuList.value));
         const list: BackendMenuItem[] = [];
         const menuObj: Record<string, any> = {};
         const butObj: Record<string, any> = {};
 
         data.forEach((item: BackendMenuItem) => {
             if(item.type == 1){
-            list.push(item);
+                list.push(item);
             }
             if(item.type == 2){
             if(!menuObj[item.parentId]){
@@ -58,22 +60,53 @@ export const usePermissionStore = defineStore("permission",() => {
 
         return list;
     })
-    // 获取用户菜单项
-    const generateRoutes = async () => {
-        try {
-            const res = await getUserMenu()
-            routes.value = JSON.parse(JSON.stringify(res.data))
-            // 转换为前端路由
-            const frontendRoutes = transformMenuToRoutes(JSON.parse(JSON.stringify(res.data)))
+
+    // 筛选出用户权限菜单并生成路由和侧边栏
+    const generateRoutes = async() => {
+        try{
+            await Promise.all([getSystemMenu(), getUserPermissions()]);
+            const filterMenuList = menuList.value.filter((menu:BackendMenuItem) => {
+                 return !menu.permission || userPermissionList.value.includes(menu.permission);
+             })
+             routes.value = JSON.parse(JSON.stringify(filterMenuList))
+               // 转换为前端路由
+            const frontendRoutes = transformMenuToRoutes(JSON.parse(JSON.stringify(filterMenuList)))
             // 添加到路由表中
             addRoutesToHome(router, frontendRoutes)
             // 生成侧边栏导航
-            const sidebarList = transformMenuToSidebar(JSON.parse(JSON.stringify(res.data)));
+            const sidebarList = transformMenuToSidebar(JSON.parse(JSON.stringify(filterMenuList)));
             sidebarRoutes.value = [dashboard, ...sidebarList]
-            return res
-        } catch (error) {
-            console.error('获取用户权限菜单失败:', error)
+             return filterMenuList;
+        }catch(error){
             throw error
+        }
+    }
+    // 获取用户菜单项
+    // const generateRoutes = async () => {
+    //     try {
+    //         const res = await getUserMenu()
+    //         routes.value = JSON.parse(JSON.stringify(res.data))
+    //         // 转换为前端路由
+    //         const frontendRoutes = transformMenuToRoutes(JSON.parse(JSON.stringify(res.data)))
+    //         // 添加到路由表中
+    //         addRoutesToHome(router, frontendRoutes)
+    //         // 生成侧边栏导航
+    //         const sidebarList = transformMenuToSidebar(JSON.parse(JSON.stringify(res.data)));
+    //         sidebarRoutes.value = [dashboard, ...sidebarList]
+    //         return res
+    //     } catch (error) {
+    //         console.error('获取用户权限菜单失败:', error)
+    //         throw error
+    //     }
+    // }
+    // 获取系统菜单
+    const getSystemMenu = async() => {
+        try{
+            const res = await getSystemMenuApi();
+            menuList.value = res.data;
+            return res;
+        }catch(error){  
+            throw error;
         }
     }
 
@@ -82,6 +115,7 @@ export const usePermissionStore = defineStore("permission",() => {
        try{
             const res = await getPermissionsListApi();
             userPermissionList.value = res.data;
+            return res.data;
        }catch(error){
             throw error
        }
@@ -102,7 +136,7 @@ export const usePermissionStore = defineStore("permission",() => {
         routes.value = []
     }
     return {
-        routes,
+        menuList,
         sidebarRoutes,
         treeRoutes,
         getUserPermissions,

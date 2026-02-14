@@ -77,3 +77,12 @@ export function getUserPermissionIdsApi(userId: number|string) :Promise<BaseResp
 export function exportUserDataApi(params: exportUserDataParams) : Promise<void>{
   return downloadFile('/sys/user/export', params)
 }
+
+
+// 获取系统菜单
+export function getSystemMenuApi() :Promise<BaseResponse>{
+  return request<BaseResponse>({
+    url: '/sys/user/getSystemMenu',
+    method: 'get'
+  })
+}

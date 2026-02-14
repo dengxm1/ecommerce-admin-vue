@@ -49,6 +49,7 @@
                         :icon="Plus" 
                         @click="handleCreate"
                         class="create-btn"
+                        v-permission="'system:role:add'"
                       >
                         新建角色
                       </el-button>
@@ -102,6 +103,7 @@
             <template #action="{row}">
                  <div class="action-buttons">
                    <el-button 
+                      v-permission="'system:role:assign-permission'"
                       type="primary" 
                       :icon="Lock" 
                       size="small"
@@ -113,6 +115,7 @@
                     </el-button>
                   
                    <el-button 
+                      v-permission="'system:role:edit'"
                       type="success" 
                       :icon="Edit" 
                       size="small"
@@ -136,7 +139,6 @@
                     />
                     <template #dropdown>
                       <el-dropdown-menu>
-                        
                         <el-dropdown-item 
                           command="permissionDetail"
                           :icon="Document"
@@ -151,6 +153,7 @@
                           :icon="Delete"
                           :disabled="row.isSystem==1"
                           class="delete-item"
+                          v-if="hasAnyPermission(['system:role:delete'])"
                         >
                           <span :style="{ color: row.isSystem==1? '#909399' : 'var(--danger-color)' }">
                             删除
@@ -206,19 +209,14 @@ import {
   Lock,
   More,
   Document,
-  Delete,
-  User,
-  Setting,
-  Star,
-  Tools,
-  Goods,
-  Coin,
-  Tickets,
-  DataAnalysis,
-  Present
+  Delete
 } from '@element-plus/icons-vue'
 import { type TableColumn } from '@/components/ProTable/ProTable.vue'
+import { usePermissionStore } from '@/stores/permission'
 
+const permissionStore = usePermissionStore()
+const hasAnyPermission = (perm: string[]) => permissionStore.hasAnyPermission(perm)
+const hasAllPermission = (perm: string[]) => permissionStore.hasAllPermissions(perm)
 
 const loading = ref(false)
 
