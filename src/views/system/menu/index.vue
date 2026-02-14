@@ -5,7 +5,6 @@
             :data="permissionStore.treeRoutes" 
             :columns="columns"
             rowId="id"
-            defaultExpandAll
             stripe
         >
           <template #table-header>

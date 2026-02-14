@@ -1,7 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import {getPermissionsListApi} from '@/api/auth'
-import {getSystemMenuApi} from '@/api/user'
+import {getPermissionsListApi,getSystemMenuApi} from '@/api/auth'
 import router from '@/router/index'
 import { transformMenuToRoutes, addRoutesToHome,transformMenuToSidebar,type BackendMenuItem} from '@/utils/routeUtils'
 import {type FrontendRoute} from '@/utils/routeUtils'

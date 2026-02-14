@@ -84,3 +84,12 @@ export function getDashboardStatsApi() {
     method: 'get'
   })
 }
+
+
+// 获取系统菜单
+export function getSystemMenuApi() :Promise<BaseResponse>{
+  return request<BaseResponse>({
+    url: '/system/auth/getSystemMenu',
+    method: 'get'
+  })
+}
