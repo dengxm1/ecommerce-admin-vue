@@ -9,7 +9,10 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({command, mode}) => {
+  const base = command === 'serve' ? '/' : '/ecommerce/'
+ return {
+  base: base,
   plugins: [
     vue(),
     vueDevTools(),
@@ -40,10 +43,11 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': {
-        target: 'http://localhost:8080', // 后端地址
+      '/eapi': {
+        target: 'http://localhost:8081', // 后端地址
         changeOrigin: true
       }
     }
   }
+}
 })

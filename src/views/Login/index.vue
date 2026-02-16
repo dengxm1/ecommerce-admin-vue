@@ -309,7 +309,10 @@ const sendCaptcha = async () => {
   }
 }
 
-const showCaptcha = () => {
+const showCaptcha = async () => {
+  if (!accountFormRef.value) return
+  const valid = await accountFormRef.value.validate()
+  if (!valid) return
   sliderCaptchaVisible.value = true
 }
 // 账号密码登录处理
