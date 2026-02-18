@@ -18,35 +18,7 @@
         <!-- 右侧：工具和用户 -->
         <div class="header-right">
             <!-- 消息通知 -->
-            <el-dropdown trigger="click" class="header-tool">
-                <div class="tool-item">
-                    <el-badge :value="3" :max="99">
-                        <el-icon :size="20"><Bell /></el-icon>
-                    </el-badge>
-                </div>
-                <template #dropdown>
-                    <el-dropdown-menu>
-                        <el-dropdown-item>
-                            <div class="notification-item">
-                                <el-icon color="#67C23A"><CircleCheck /></el-icon>
-                                <div>
-                                    <div class="notification-title">新订单</div>
-                                    <div class="notification-desc">用户下单了商品 #12345</div>
-                                </div>
-                            </div>
-                        </el-dropdown-item>
-                        <el-dropdown-item divided>
-                            <div class="notification-item">
-                                <el-icon color="#E6A23C"><Warning /></el-icon>
-                                <div>
-                                    <div class="notification-title">库存预警</div>
-                                    <div class="notification-desc">商品 #67890 库存不足</div>
-                                </div>
-                            </div>
-                        </el-dropdown-item>
-                    </el-dropdown-menu>
-                </template>
-            </el-dropdown>
+            <NotificationCenter />
             
             <!-- 全屏切换 -->
             <div class="tool-item" @click="toggleFullscreen">
@@ -92,9 +64,6 @@ import { useUserStore } from '@/stores/user';
 import { usePermissionStore } from '@/stores/permission'; 
 // Element Plus 图标
 import {
-    Bell,
-    CircleCheck,
-    Warning,
     FullScreen,
     Moon,
     ArrowDown,
@@ -102,6 +71,7 @@ import {
     SwitchButton,
 } from '@element-plus/icons-vue';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import NotificationCenter from '@/components/NotificationCenter/index.vue'
 
 const route = useRoute();
 const router = useRouter();

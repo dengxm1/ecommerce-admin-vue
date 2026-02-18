@@ -98,7 +98,6 @@ export function transformMenuToSidebar(menuList: BackendMenuItem[]): FrontendRou
         return (aItem?.sort || 0) - (bItem?.sort || 0)
     })
     const rootRoutes = createSidebar(sidebarList);
-    console.log('生成的侧边栏rootRoutes==',rootRoutes)
     return rootRoutes
 }
 // 将侧边栏菜单项转换成路由格式
@@ -185,6 +184,7 @@ export const componentImports: Record<string, () => Promise<any>> = {
   'system/user/index': () => import('@/views/system/user/index.vue'),
   'system/role/index': () => import('@/views/system/role/index.vue'),
   'system/menu/index': () => import('@/views/system/menu/index.vue'),
+  'system/notification/index': () => import('@/views/system/notification/index.vue'),
   
   // 商品管理
   'product/list/index': () => import('@/views/product/list/index.vue'),

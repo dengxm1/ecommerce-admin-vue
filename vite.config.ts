@@ -36,6 +36,10 @@ export default defineConfig(({command, mode}) => {
       resolvers: [ElementPlusResolver()],
     })
   ],
+  define: {
+    // 添加这一行解决 global 问题
+    global: 'window',
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

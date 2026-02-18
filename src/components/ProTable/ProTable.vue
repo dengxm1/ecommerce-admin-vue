@@ -58,7 +58,7 @@
                     </template>
                 </el-table-column>
             </el-table>
-           <div class="pagination-section" v-if="showPagination">
+            <div class="pagination-section" v-if="showPagination">
                 <el-pagination
                   v-model:current-page="current"
                   v-model:page-size="size"
@@ -68,7 +68,7 @@
                   :background="background"
                   @change="paginationChange"
                 />
-              </div>
+            </div>
         </el-card>
     </view>
 </template>
