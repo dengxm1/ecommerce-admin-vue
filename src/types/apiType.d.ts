@@ -8,6 +8,13 @@ export interface BaseResponse<T = any> {
   message: string
   data?: T
 }
+export interface PageResponse<T> {
+  list: T[],
+  pageNum: number, // 当前页码
+  pageSize: number, // 每页条数
+  total: number, // 总记录数
+  totalPages: number // 总页数
+}
 export interface loginResponse extends BaseResponse{
   token: string,
 }

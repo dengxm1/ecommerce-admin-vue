@@ -59,7 +59,6 @@
 
 <script setup lang="ts">
 import {usePermissionStore} from '@/stores/permission'
-import type {FrontendRoute} from '@/utils/routeUtils'
 // Element Plus 图标
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user';

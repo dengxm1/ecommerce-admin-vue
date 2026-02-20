@@ -23,7 +23,7 @@ export const useTabsStore = defineStore('tabs', ()=> {
     // 添加标签页
     const addTab = (route:any) => {
         // 排除不需要添加标签的页面
-        if (route.meta?.hidden || !route.meta?.title) {
+        if (route.meta?.noTab || !route.meta?.title) {
             return
         }
         const { path, name,fullPath, meta, query, params } = route;

@@ -1,18 +1,9 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import {getPermissionsListApi,getSystemMenuApi} from '@/api/auth'
-import router from '@/router/index'
+import router, {staticRouteMeta} from '@/router/index'
 import { transformMenuToRoutes, addRoutesToHome,transformMenuToSidebar,type BackendMenuItem} from '@/utils/routeUtils'
 import {type FrontendRoute} from '@/utils/routeUtils'
-const dashboard:FrontendRoute  = {
-    path: '/dashboard',
-    name: 'dashboard',
-    meta:{
-        title: '概览',
-        hidden: false,
-        icon: 'Histogram'
-    },
-}
 export const usePermissionStore = defineStore("permission",() => {
     const menuList = ref([]); //系统菜单列表
     const routes = ref([]); //通过权限列表筛选过后的用户权限菜单列表
@@ -68,13 +59,38 @@ export const usePermissionStore = defineStore("permission",() => {
                  return !menu.permission || userPermissionList.value.includes(menu.permission);
              })
              routes.value = JSON.parse(JSON.stringify(filterMenuList))
-               // 转换为前端路由
+            // 转换为前端路由
             const frontendRoutes = transformMenuToRoutes(JSON.parse(JSON.stringify(filterMenuList)))
             // 添加到路由表中
             addRoutesToHome(router, frontendRoutes)
-            // 生成侧边栏导航
-            const sidebarList = transformMenuToSidebar(JSON.parse(JSON.stringify(filterMenuList)));
-            sidebarRoutes.value = [dashboard, ...sidebarList]
+            // 生成动态侧边栏导航
+            const dynamicSidebarList = transformMenuToSidebar(JSON.parse(JSON.stringify(filterMenuList)));
+            // 筛选静态路由（根据 hidden 和权限）
+            const filteredStaticRoutes = staticRouteMeta.filter(route => {
+                // 如果 hidden 为 true，直接过滤掉
+                if (route.meta?.hidden) return false
+                
+                // 检查权限（如果有权限要求）
+                const requiredPermissions = route.meta?.permissions as string[] || []
+                if (requiredPermissions.length > 0) {
+                    return requiredPermissions.every(perm => 
+                        userPermissionList.value.includes(perm)
+                    )
+                }
+                
+                return true  // 没有权限要求，直接显示
+            }).map(route => ({
+                path: route.path,
+                name: route.name,
+                meta: {
+                    title: route.meta?.title as string,
+                    icon: route.meta?.icon as string,
+                    hidden: route.meta?.hidden as boolean
+                }
+            })) as FrontendRoute[]
+            
+            // 合并静态和动态侧边栏
+            sidebarRoutes.value = [...filteredStaticRoutes, ...dynamicSidebarList]
              return filterMenuList;
         }catch(error){
             throw error

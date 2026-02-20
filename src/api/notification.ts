@@ -2,6 +2,29 @@ import request from '@/utils/request'
 import type { BaseResponse } from '@/types/apiType'
 import type { Notification } from '@/types/notification'
 
+// 管理员获取通知列表
+export function getAdminNotificationsApi(params: {
+  pageNum: number
+  pageSize: number
+  keyword?: string
+  type?: string
+  status?: number | null,
+  receiverType?: string
+  senderId?: number
+  dateRange?: string[]
+}) {
+  return request<BaseResponse<{
+    list: Notification[]
+    total: number
+    pageNum: number
+    pageSize: number
+  }>>({
+    url: '/notification/admin/list',
+    method: 'post',
+    data: params
+  })
+}
+
 // 获取未读通知
 export function getUnreadNotificationsApi(): Promise<BaseResponse<Notification[]>> {
   return request<BaseResponse<Notification[]>>({

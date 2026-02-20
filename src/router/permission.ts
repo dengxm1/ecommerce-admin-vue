@@ -42,7 +42,7 @@ export const setupPermissionGuard = (router: Router) => {
           await Promise.all([
             userStore.fetchUserInfo(),
             permissionStore.generateRoutes()
-        ])
+          ])
         // 修复非概览页刷新页面路由丢失问题
         if (to.path !== '/' && to.path !== '/dashboard') {
           NProgress.done()
@@ -57,7 +57,7 @@ export const setupPermissionGuard = (router: Router) => {
       // 在验证通过后，添加标签页
       const tabsStore = useTabsStore()
       // 排除不需要添加标签的页面
-      if (!to.meta?.hidden && to.meta?.title) {
+      if (!to.meta?.noTab && to.meta?.title) {
          tabsStore.addTab(to)
          tabsStore.setActiveTab(to.path);
       }

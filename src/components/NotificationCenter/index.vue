@@ -139,7 +139,7 @@ const handleDelete = (id: number) => {
 
 // 查看全部
 const handleViewAll = () => {
-  router.push('/system/notification')
+  router.push({name:'UserMessages'})
 }
 
 // 点击图标

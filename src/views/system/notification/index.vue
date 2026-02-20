@@ -198,7 +198,7 @@ import {
 import type { TableColumn } from '@/components/ProTable/ProTable.vue'
 import { useNotificationStore } from '@/stores/notification'
 import { 
-  getNotificationsApi, 
+  getAdminNotificationsApi, 
   markAsReadApi, 
   deleteNotificationApi,
   batchDeleteNotificationsApi,
@@ -206,6 +206,7 @@ import {
 import type { Notification } from '@/types/notification'
 import SendAnnouncementDialog from './components/SendAnnouncement.vue'
 import NotificationDetailDrawer from './components/NotificationDetail.vue'
+import { p } from 'vue-router/dist/router-CWoNjPRp.mjs'
 
 const notificationStore = useNotificationStore()
 
@@ -214,8 +215,8 @@ const searchFormRef = ref()
 // 搜索表单
 const searchForm = reactive({
   keyword: '',
-  type: '',
-  status: '',
+  type: '',   //SYSTEM(系统公告), PERSONAL(个人通知), TASK(任务提醒)
+  status: null as number | null, //0未读, 1已读
   dateRange: []
 })
 
@@ -227,7 +228,10 @@ const searchFormList = computed(() => [
     placeholder: '标题/内容',
     clearable: true,
     style: 'width: 200px',
-    keyEnter: () => fetchData()
+    keyEnter: () => fetchData(),
+    clear: () => {
+      fetchData()
+    }
   },
   {
     type: 'select',
@@ -387,8 +391,10 @@ const formatTime = (time: string, format = 'YYYY-MM-DD HH:mm:ss') => {
 
 // 过滤变化
 const handleFilterChange = (val: any) => {
+  searchForm.status = null;
+  searchForm.type = '';
   if (val === 'unread') {
-    searchForm.status = '0'
+    searchForm.status = 0
   } else if (val === 'system') {
     searchForm.type = 'SYSTEM'
   } else if (val === 'personal') {
@@ -397,7 +403,7 @@ const handleFilterChange = (val: any) => {
     searchForm.type = 'TASK'
   } else {
     searchForm.type = ''
-    searchForm.status = ''
+    searchForm.status = null
   }
   pagination.current = 1
   fetchData()
@@ -414,6 +420,8 @@ const handleReset = () => {
   searchFormRef.value?.resetFields()
   filterType.value = 'all'
   pagination.current = 1
+  pagination.size = 10;
+  pagination.total = 0;
   fetchData()
 }
 
@@ -431,7 +439,7 @@ const fetchData = async () => {
       pageSize: pagination.size,
       ...searchForm
     }
-    const res = await getNotificationsApi(params)
+    const res = await getAdminNotificationsApi(params)
     tableData.value = res.data?.list || []
     pagination.total = res.data?.total || 0
   } catch (error) {
@@ -446,7 +454,13 @@ const fetchData = async () => {
 
 // 刷新
 const refreshTable = () => {
+  pagination.current = 1
+  pagination.size = 10
+  pagination.total = 0
   selectedRows.value = []
+  searchForm.status = null;
+  searchForm.type = '';
+  filterType.value = 'all'
   fetchData()
 }
 
@@ -610,9 +624,9 @@ onMounted(() => {
 }
 
 .receiver-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  // display: flex;
+  // flex-direction: column;
+  // gap: 4px;
   
   .receiver-name {
     font-size: 12px;
