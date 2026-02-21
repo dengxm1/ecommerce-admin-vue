@@ -45,21 +45,8 @@
         </div>
       </div>
       
-      <!-- 额外数据 -->
-      <div v-if="notification.data" class="detail-data">
-        <h4 class="data-title">额外数据</h4>
-        <pre class="data-content">{{ JSON.stringify(notification.data, null, 2) }}</pre>
-      </div>
-      
       <!-- 底部按钮 -->
       <div class="detail-footer">
-        <el-button 
-          v-if="notification.status === 0"
-          type="primary" 
-          @click="handleMarkRead"
-        >
-          标记为已读
-        </el-button>
         <el-button @click="drawerVisible = false">关闭</el-button>
       </div>
     </div>
@@ -78,7 +65,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
-  (e: 'mark-read', notification: Notification): void
 }>()
 
 // 抽屉显示
@@ -104,9 +90,9 @@ const receiverTypeMap = {
 }
 
 // 获取类型标签
-const getTypeTag = (type: string) => typeMap[type]?.tag || 'info'
-const getTypeName = (type: string) => typeMap[type]?.name || type
-const getReceiverTypeName = (type: string) => receiverTypeMap[type] || type
+const getTypeTag = (type: string):any => typeMap[type as keyof typeof typeMap]?.tag || 'info'
+const getTypeName = (type: string) => typeMap[type as keyof typeof typeMap]?.name || type
+const getReceiverTypeName = (type: string) => receiverTypeMap[type as keyof typeof receiverTypeMap] || type
 
 // 格式化时间
 const formatTime = (time: string, format = 'YYYY-MM-DD HH:mm:ss') => {
@@ -114,13 +100,6 @@ const formatTime = (time: string, format = 'YYYY-MM-DD HH:mm:ss') => {
   return dayjs(time).format(format)
 }
 
-// 标记已读
-const handleMarkRead = () => {
-  if (props.notification) {
-    emit('mark-read', props.notification)
-    drawerVisible.value = false
-  }
-}
 
 // 关闭后清理
 const handleClosed = () => {
@@ -172,54 +151,6 @@ const handleClosed = () => {
   }
 }
 
-.detail-info {
-  margin-bottom: 24px;
-  padding: 16px;
-  background: var(--bg-color);
-  border-radius: var(--radius-medium);
-  
-  .info-item {
-    display: flex;
-    margin-bottom: 8px;
-    
-    &:last-child {
-      margin-bottom: 0;
-    }
-    
-    .info-label {
-      width: 80px;
-      color: var(--text-secondary);
-    }
-    
-    .info-value {
-      flex: 1;
-      color: var(--text-primary);
-    }
-  }
-}
-
-.detail-data {
-  margin-bottom: 24px;
-  
-  .data-title {
-    margin: 0 0 8px 0;
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-  
-  .data-content {
-    margin: 0;
-    padding: 12px;
-    background: #1e1e1e;
-    color: #d4d4d4;
-    border-radius: var(--radius-medium);
-    font-size: 13px;
-    line-height: 1.6;
-    overflow: auto;
-    max-height: 200px;
-  }
-}
 
 .detail-footer {
   margin-top: auto;

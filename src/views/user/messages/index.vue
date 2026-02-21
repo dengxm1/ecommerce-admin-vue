@@ -24,7 +24,6 @@
                 全部已读
             </el-button>
         </div>
-
     </div>
 
     <!-- 消息列表 -->
@@ -107,12 +106,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { CircleCheck, Delete } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
-// import { getUserMessageListApi, markAsReadApi, deleteMessageApi, markAllAsReadApi } from '@/api/message'
-import {getUserMessageListApi} from '@/api/message'
-import type { Message, MessagePageParams } from '@/types/message'
+import {getUserMessageListApi, markAsReadApi,markAllAsReadApi, deleteNotificationApi} from '@/api/message'
+import type { Message } from '@/types/message'
 import MessageDetailDrawer from './components/MessageDetailDrawer.vue'
 
 // 过滤类型
@@ -207,9 +205,9 @@ const handleMarkRead = async (message: any) => {
   if (message.status === 1) return
   
   try {
-    // await markAsReadApi(message.id)
-    // message.status = 1
-    // ElMessage.success('已标记为已读')
+    await markAsReadApi(message.id)
+    message.status = 1
+    ElMessage.success('已标记为已读')
   } catch (error) {
     console.error('标记失败', error)
   }
@@ -218,9 +216,9 @@ const handleMarkRead = async (message: any) => {
 // 全部已读
 const handleMarkAllRead = async () => {
   try {
-    // await markAllAsReadApi()
-    // messageList.value.forEach(m => m.status = 1)
-    // ElMessage.success('全部已读')
+    await markAllAsReadApi()
+    messageList.value.forEach(m => m.status = 1)
+    ElMessage.success('全部已读')
   } catch (error) {
     console.error('操作失败', error)
   }
@@ -229,14 +227,14 @@ const handleMarkAllRead = async () => {
 // 删除消息
 const handleDelete = async (message: any) => {
   try {
-    // await ElMessageBox.confirm('确定要删除这条消息吗？', '提示', { type: 'warning' })
-    // await deleteMessageApi(message.id)
-    // const index = messageList.value.findIndex(m => m.id === message.id)
-    // if (index !== -1) {
-    //   messageList.value.splice(index, 1)
-    //   pagination.total--
-    // }
-    // ElMessage.success('删除成功')
+    await ElMessageBox.confirm('确定要删除这条消息吗？', '提示', { type: 'warning' })
+    await deleteNotificationApi(message.id)
+    const index = messageList.value.findIndex(m => m.id === message.id)
+    if (index !== -1) {
+      messageList.value.splice(index, 1)
+      pagination.total--
+    }
+    ElMessage.success('删除成功')
   } catch (error) {
     // 用户取消
   }

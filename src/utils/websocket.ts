@@ -16,15 +16,20 @@ class WebSocketService {
       console.warn('[WebSocket] 未登录，无法建立连接')
       return
     }
-
-    const socketUrl = 'http://localhost:8081/ws'
+        // 如果已经连接，不要重复连接
+    if (this.connected) {
+      console.log('[WebSocket] 已经连接，跳过')
+      return
+    }
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'
+   const sockJsUrl = `${baseUrl}${import.meta.env.VITE_APP_BASE_API}/ws`
     
-    console.log('[WebSocket] 正在连接...', socketUrl)
+    console.log('[WebSocket] 正在连接...', sockJsUrl)
     
     this.client = new Client({
       // 使用 webSocketFactory 创建 SockJS 连接
       webSocketFactory: () => {
-        return new SockJS(`${socketUrl}?token=${token}`)
+        return new SockJS(`${sockJsUrl}?token=${token}`)
       },
       // 心跳设置（毫秒）
       heartbeatIncoming: 30000,
@@ -138,6 +143,11 @@ class WebSocketService {
     console.log(`[WebSocket] 尝试重连 (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`)
     
     // client 会自动重连，不需要手动处理
+  }
+  // 重新连接
+  reconnectWithNewToken() {
+    this.disconnect()
+    this.connect()
   }
   
   // 断开连接

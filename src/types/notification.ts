@@ -6,11 +6,15 @@ export interface Notification {
   senderId?: number;
   senderName?: string;
   receiverId?: number;
+  receiverName?: string;
+  roleName?: string;
   receiverType: 'ALL' | 'USER' | 'ROLE';
+  status?: 0 | 1; // 0未读，1已读
   roleId?: number;
   tenantId: number;
   data?: any;
-  status: 0 | 1; // 0-未读 1-已读
+  totalCount: number; // 总接收人数
+  readCount: number; // 已读人数
   createTime: string;
   readTime?: string;
 }

@@ -74,15 +74,6 @@
               已选择 {{ selectedCount }} 项
             </span>
           </div>
-          <div class="actions-right">
-            <el-radio-group v-model="filterType"  @change="handleFilterChange">
-              <el-radio-button value="all">全部</el-radio-button>
-              <el-radio-button value="unread">未读</el-radio-button>
-              <el-radio-button value="system">系统</el-radio-button>
-              <el-radio-button value="personal">个人</el-radio-button>
-              <el-radio-button value="task">任务</el-radio-button>
-            </el-radio-group>
-          </div>
         </div>
       </template>
 
@@ -91,14 +82,6 @@
         <el-tag :type="getTypeTag(row.type)" :icon="getTypeIcon(row.type)" size="small">
           {{ getTypeName(row.type) }}
         </el-tag>
-      </template>
-
-      <!-- 标题列 -->
-      <template #title="{ row }">
-        <div class="title-cell" :class="{ 'unread': row.status === 0 }">
-          <span class="title-text">{{ row.title }}</span>
-          <el-tag v-if="row.status === 0" size="small" type="danger" effect="dark">新</el-tag>
-        </div>
       </template>
 
       <!-- 内容列 -->
@@ -114,12 +97,6 @@
           <el-tag size="small" :type="getReceiverTagType(row.receiverType)">
             {{ getReceiverTypeName(row.receiverType) }}
           </el-tag>
-          <span v-if="row.receiverType === 'USER' && row.receiverName" class="receiver-name">
-            {{ row.receiverName }}
-          </span>
-          <span v-else-if="row.receiverType === 'ROLE' && row.roleName" class="receiver-name">
-            {{ row.roleName }}
-          </span>
         </div>
       </template>
 
@@ -136,33 +113,23 @@
       <!-- 操作列 -->
       <template #action="{ row }">
         <div class="action-buttons">
-          <el-tooltip content="查看详情" placement="top">
-            <el-button 
-              type="info" 
+           <el-button 
+              type="primary" 
               :icon="View" 
               size="small"
-              circle
+              link
               @click="handleView(row)"
-            />
-          </el-tooltip>
-          <el-tooltip v-if="row.status === 0" content="标记已读" placement="top">
-            <el-button 
-              type="success" 
-              :icon="CircleCheck" 
-              size="small"
-              circle
-              @click="handleMarkRead(row)"
-            />
-          </el-tooltip>
-          <el-tooltip v-permission="'system:notification:delete'" content="删除" placement="top">
-            <el-button 
+            >
+             详情
+            </el-button>
+           <el-button 
+              v-permission="'system:notification:delete'"
               type="danger" 
               :icon="Delete" 
               size="small"
-              circle
+              link
               @click="handleDelete(row)"
-            />
-          </el-tooltip>
+            >删除</el-button>
         </div>
       </template>
     </ProTable>
@@ -177,7 +144,6 @@
     <NotificationDetailDrawer
       v-model="detailDrawer.visible"
       :notification="detailDrawer.data"
-      @mark-read="handleMarkRead"
     />
   </div>
 </template>
@@ -193,22 +159,16 @@ import {
   Delete, 
   RefreshRight,
   View,
-  CircleCheck
 } from '@element-plus/icons-vue'
 import type { TableColumn } from '@/components/ProTable/ProTable.vue'
-import { useNotificationStore } from '@/stores/notification'
 import { 
   getAdminNotificationsApi, 
-  markAsReadApi, 
-  deleteNotificationApi,
   batchDeleteNotificationsApi,
 } from '@/api/notification'
 import type { Notification } from '@/types/notification'
 import SendAnnouncementDialog from './components/SendAnnouncement.vue'
 import NotificationDetailDrawer from './components/NotificationDetail.vue'
-import { p } from 'vue-router/dist/router-CWoNjPRp.mjs'
 
-const notificationStore = useNotificationStore()
 
 const searchFormRef = ref()
 
@@ -216,7 +176,6 @@ const searchFormRef = ref()
 const searchForm = reactive({
   keyword: '',
   type: '',   //SYSTEM(系统公告), PERSONAL(个人通知), TASK(任务提醒)
-  status: null as number | null, //0未读, 1已读
   dateRange: []
 })
 
@@ -248,19 +207,6 @@ const searchFormList = computed(() => [
     clear: () => fetchData()
   },
   {
-    type: 'select',
-    label: '状态',
-    prop: 'status',
-    placeholder: '全部状态',
-    clearable: true,
-    style: 'width: 120px',
-    options: [
-      { id: 0, label: '未读' },
-      { id: 1, label: '已读' }
-    ],
-    clear: () => fetchData()
-  },
-  {
     type: 'dateRange',
     label: '发送时间',
     prop: 'dateRange',
@@ -280,7 +226,6 @@ const columns = ref<TableColumn[]>([
   {
     prop: 'title',
     label: '标题',
-    slot: 'title',
     minWidth: 200
   },
   {
@@ -308,17 +253,14 @@ const columns = ref<TableColumn[]>([
     sortable: true
   },
   {
-    prop: 'status',
-    label: '状态',
-    width: 80,
-    tags: true,
-    tagFormatter: (row, type) => {
-      if (type === 'text') {
-        return row.status === 0 ? '未读' : '已读'
-      } else {
-        return row.status === 0 ? 'danger' : 'info'
-      }
-    }
+    prop: 'totalCount',
+    label: '总接收人数',
+    width: 100
+  },
+   {
+    prop: 'readCount',
+    label: '已读人数',
+    width: 100
   }
 ])
 
@@ -389,25 +331,6 @@ const formatTime = (time: string, format = 'YYYY-MM-DD HH:mm:ss') => {
   return dayjs(time).format(format)
 }
 
-// 过滤变化
-const handleFilterChange = (val: any) => {
-  searchForm.status = null;
-  searchForm.type = '';
-  if (val === 'unread') {
-    searchForm.status = 0
-  } else if (val === 'system') {
-    searchForm.type = 'SYSTEM'
-  } else if (val === 'personal') {
-    searchForm.type = 'PERSONAL'
-  } else if (val === 'task') {
-    searchForm.type = 'TASK'
-  } else {
-    searchForm.type = ''
-    searchForm.status = null
-  }
-  pagination.current = 1
-  fetchData()
-}
 
 // 搜索
 const handleSearch = () => {
@@ -458,7 +381,6 @@ const refreshTable = () => {
   pagination.size = 10
   pagination.total = 0
   selectedRows.value = []
-  searchForm.status = null;
   searchForm.type = '';
   filterType.value = 'all'
   fetchData()
@@ -473,26 +395,8 @@ const handleSelectionChange = (rows: Notification[]) => {
 const handleView = (row: Notification) => {
   detailDrawer.data = row
   detailDrawer.visible = true
-  
-  // 如果是未读，自动标记已读
-  if (row.status === 0) {
-    handleMarkRead(row)
-  }
 }
 
-// 标记已读
-const handleMarkRead = async (row: Notification) => {
-  if (row.status === 1) return
-  
-  try {
-    await markAsReadApi(row.id)
-    row.status = 1
-    notificationStore.fetchUnreadCount()
-    ElMessage.success('已标记为已读')
-  } catch (error) {
-    console.error('标记已读失败', error)
-  }
-}
 
 // 删除单条
 const handleDelete = async (row: Notification) => {
@@ -503,14 +407,9 @@ const handleDelete = async (row: Notification) => {
       { type: 'warning' }
     )
     
-    await deleteNotificationApi(row.id)
-    const index = tableData.value.findIndex(item => item.id === row.id)
-    if (index !== -1) {
-      tableData.value.splice(index, 1)
-      pagination.total--
-    }
-    notificationStore.fetchUnreadCount()
+    await batchDeleteNotificationsApi([row.id])
     ElMessage.success('删除成功')
+    fetchData()
   } catch (error) {
     // 用户取消
   }
@@ -529,9 +428,9 @@ const handleBatchDelete = async () => {
     
     await batchDeleteNotificationsApi(selectedKeys.value)
     selectedRows.value = []
-    fetchData()
-    notificationStore.fetchUnreadCount()
     ElMessage.success('批量删除成功')
+    fetchData()
+
   } catch (error) {
     // 用户取消
   }
@@ -602,18 +501,6 @@ onMounted(() => {
   }
 }
 
-.title-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  
-  &.unread {
-    .title-text {
-      font-weight: 600;
-      color: var(--primary-color);
-    }
-  }
-}
 
 .content-cell {
   max-width: 300px;
@@ -621,17 +508,6 @@ onMounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--text-regular);
-}
-
-.receiver-info {
-  // display: flex;
-  // flex-direction: column;
-  // gap: 4px;
-  
-  .receiver-name {
-    font-size: 12px;
-    color: var(--text-secondary);
-  }
 }
 
 .time-info {
@@ -642,9 +518,4 @@ onMounted(() => {
   }
 }
 
-.action-buttons {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
 </style>

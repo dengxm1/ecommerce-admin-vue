@@ -33,48 +33,7 @@ export function getUnreadNotificationsApi(): Promise<BaseResponse<Notification[]
   })
 }
 
-// 获取所有通知（分页）
-export function getNotificationsApi(params: {
-  pageNum: number
-  pageSize: number
-  type?: string
-  status?: number | string
-}) {
-  return request<BaseResponse<{
-    list: Notification[]
-    total: number
-  }>>({
-    url: '/notification/list',
-    method: 'post',
-    data: params
-  })
-}
-
-// 标记已读
-export function markAsReadApi(id: number): Promise<BaseResponse> {
-  return request<BaseResponse>({
-    url: `/notification/read/${id}`,
-    method: 'post'
-  })
-}
-
-// 全部标记已读
-export function markAllAsReadApi(): Promise<BaseResponse> {
-  return request<BaseResponse>({
-    url: '/notification/read/all',
-    method: 'post'
-  })
-}
-
-// 删除通知
-export function deleteNotificationApi(id: number): Promise<BaseResponse> {
-  return request<BaseResponse>({
-    url: `/notification/${id}`,
-    method: 'delete'
-  })
-}
-
-// 批量删除
+// 管理员批量删除
 export function batchDeleteNotificationsApi(ids: number[]): Promise<BaseResponse> {
   return request<BaseResponse>({
     url: '/notification/batch',

@@ -10,3 +10,28 @@ export function getUserMessageListApi(params: MessagePageParams) {
     data: params
   })
 }
+
+// 添加标记已读 API
+export function markAsReadApi(id: number) {
+  return request<BaseResponse>({
+    url: `/notification/read/${id}`,
+    method: 'post'
+  })
+}
+
+
+// 全部标记为已读
+export function markAllAsReadApi() {
+  return request<BaseResponse>({
+    url: '/notification/read/all',
+    method: 'post'
+  })
+}
+
+// 删除通知
+export function deleteNotificationApi(id: number): Promise<BaseResponse> {
+  return request<BaseResponse>({
+    url: `/notification/${id}`,
+    method: 'delete'
+  })
+}

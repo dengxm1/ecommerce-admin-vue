@@ -73,7 +73,7 @@
                   />
                 </el-form-item>
 
-                <div class="form-options">
+                <!-- <div class="form-options">
                   <el-checkbox v-model="accountForm.rememberMe">记住我</el-checkbox>
                   <el-link 
                     type="primary" 
@@ -82,7 +82,7 @@
                   >
                     忘记密码？
                   </el-link>
-                </div>
+                </div> -->
                 <el-form-item>
                   <el-button
                     type="primary"
@@ -133,7 +133,7 @@
                 </el-form-item>
 
                 <!-- 协议 -->
-               <div class="form-options">
+               <!-- <div class="form-options">
                 <div class="agreement-wrapper">
                   <el-checkbox v-model="phoneForm.agreement"></el-checkbox>
                   <div class="agreement-content">
@@ -145,7 +145,7 @@
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> -->
 
                 <!-- 登录按钮 -->
                 <el-form-item>
@@ -202,7 +202,7 @@ import { useUserStore } from '@/stores/user'
 import ForgotPasswordForm from './components/ForgotPasswordForm.vue'
 import { User, Lock, Iphone, Phone } from '@element-plus/icons-vue'
 import SliderCaptcha from '@/components/SliderCaptcha/SliderCaptcha.vue'
-
+import { useNotificationStore } from '@/stores/notification'
 // 路由实例
 const router = useRouter()
 const route = useRoute()
@@ -329,7 +329,8 @@ const handleAccountLogin = async () => {
       username: accountForm.username,
       password: accountForm.password
     })
-
+    const notificationStore = useNotificationStore()
+    notificationStore.initWebSocket()
     // 处理记住我
     if (accountForm.rememberMe) {
       localStorage.setItem('remembered_username', accountForm.username)
@@ -381,6 +382,8 @@ const handlePhoneLogin = async () => {
       phone: phoneForm.phone,
       code: phoneForm.captcha
     })
+    const notificationStore = useNotificationStore()
+    notificationStore.initWebSocket()
     ElMessage.success('登录成功')
     if (redirect) {
        router.push({

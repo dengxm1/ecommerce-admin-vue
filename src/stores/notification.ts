@@ -3,12 +3,8 @@ import { ref, computed } from 'vue'
 import websocketService from '@/utils/websocket'
 import { 
   getUnreadNotificationsApi, 
-  markAsReadApi, 
-  markAllAsReadApi,
-  deleteNotificationApi 
 } from '@/api/notification'
 import type { Notification } from '@/types/notification'
-import { ElMessage } from 'element-plus'
 
 export const useNotificationStore = defineStore('notification', () => {
   // 状态
@@ -46,6 +42,17 @@ export const useNotificationStore = defineStore('notification', () => {
     
     // 连接 WebSocket
     websocketService.connect()
+  }
+
+    /**
+   * 检查并连接 WebSocket
+   */
+  const connectIfNeeded = () => {
+    const token = localStorage.getItem('access-token')
+    if (token && !websocketService.isConnected()) {
+      console.log('[NotificationStore] 检测到token，尝试连接WebSocket')
+      initWebSocket()
+    }
   }
 
   /**
@@ -137,53 +144,53 @@ export const useNotificationStore = defineStore('notification', () => {
    * 标记为已读
    */
   const markAsRead = async (id: number) => {
-    try {
-      await markAsReadApi(id)
-      const notification = notifications.value.find(n => n.id === id)
-      if (notification && notification.status === 0) {
-        notification.status = 1
-        unreadCount.value--
-      }
-    } catch (error) {
-      console.error('标记已读失败', error)
-    }
+    // try {
+    //   await markAsReadApi(id)
+    //   const notification = notifications.value.find(n => n.id === id)
+    //   if (notification && notification.status === 0) {
+    //     notification.status = 1
+    //     unreadCount.value--
+    //   }
+    // } catch (error) {
+    //   console.error('标记已读失败', error)
+    // }
   }
 
   /**
    * 全部标记为已读
    */
   const markAllAsRead = async () => {
-    try {
-      await markAllAsReadApi()
-      notifications.value.forEach(n => {
-        if (n.status === 0) {
-          n.status = 1
-        }
-      })
-      unreadCount.value = 0
-      ElMessage.success('已全部标记为已读')
-    } catch (error) {
-      console.error('全部标记已读失败', error)
-    }
+    // try {
+    //   await markAllAsReadApi()
+    //   notifications.value.forEach(n => {
+    //     if (n.status === 0) {
+    //       n.status = 1
+    //     }
+    //   })
+    //   unreadCount.value = 0
+    //   ElMessage.success('已全部标记为已读')
+    // } catch (error) {
+    //   console.error('全部标记已读失败', error)
+    // }
   }
 
   /**
    * 删除通知
    */
   const deleteNotification = async (id: number) => {
-    try {
-      await deleteNotificationApi(id)
-    const targetNotification = notifications.value.find(n => n.id === id)
-    if (targetNotification) {
-      if (targetNotification.status === 0) {
-        unreadCount.value--
-      }
-      notifications.value = notifications.value.filter(n => n.id !== id)
-    }
-      ElMessage.success('删除成功')
-    } catch (error) {
-      console.error('删除通知失败', error)
-    }
+    // try {
+    //   await deleteNotificationApi(id)
+    // const targetNotification = notifications.value.find(n => n.id === id)
+    // if (targetNotification) {
+    //   if (targetNotification.status === 0) {
+    //     unreadCount.value--
+    //   }
+    //   notifications.value = notifications.value.filter(n => n.id !== id)
+    // }
+    //   ElMessage.success('删除成功')
+    // } catch (error) {
+    //   console.error('删除通知失败', error)
+    // }
   }
 
   /**
@@ -220,6 +227,7 @@ export const useNotificationStore = defineStore('notification', () => {
     markAsRead,
     markAllAsRead,
     deleteNotification,
-    cleanup
+    cleanup,
+    connectIfNeeded
   }
 })
