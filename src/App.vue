@@ -31,6 +31,12 @@ router.afterEach((to, from) => {
     notificationStore.cleanup()
   }
 })
+
+// 页面卸载时断开 WebSocket
+onUnmounted(() => {
+  console.log('[App] 页面卸载，断开 WebSocket')
+  notificationStore.cleanup()
+})
 </script>
 
 <style scoped lang="scss">

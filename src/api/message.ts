@@ -3,11 +3,19 @@ import type { BaseResponse, PageResponse } from '@/types/apiType'
 import type { Message, MessagePageParams } from '@/types/message'
 
 // 获取个人消息列表
-export function getUserMessageListApi(params: MessagePageParams) {
+export function getUserMessageListApi(params?: MessagePageParams) {
   return request<BaseResponse<PageResponse<Message>>>({
     url: '/notification/list',
     method: 'post',
     data: params
+  })
+}
+
+// 获取未读通知
+export function getUnreadNotificationsApi(): Promise<BaseResponse<Message[]>> {
+  return request<BaseResponse<Message[]>>({
+    url: '/notification/unread',
+    method: 'get'
   })
 }
 
@@ -29,9 +37,9 @@ export function markAllAsReadApi() {
 }
 
 // 删除通知
-export function deleteNotificationApi(id: number): Promise<BaseResponse> {
+export function deleteNotificationApi(notificationId: number): Promise<BaseResponse> {
   return request<BaseResponse>({
-    url: `/notification/${id}`,
+    url: `/notification/${notificationId}`,
     method: 'delete'
   })
 }

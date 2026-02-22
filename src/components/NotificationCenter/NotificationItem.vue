@@ -6,9 +6,12 @@
   >
     <!-- 图标 -->
     <div class="item-icon" :class="iconClass">
-      <el-icon :size="20">
-        <component :is="iconComponent" />
-      </el-icon>
+        <el-badge :is-dot="notification.status === 0" :hidden="notification.status !== 0" :offset="[0, 0]">
+        <el-icon :size="20">
+          <component :is="iconComponent" />
+        </el-icon>
+       </el-badge>
+ 
     </div>
     
     <!-- 内容 -->
@@ -58,7 +61,7 @@ import {
   Delete,
   More
 } from '@element-plus/icons-vue'
-import type { Notification } from '@/types/notification'
+import type { Message } from '@/types/message'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
@@ -67,11 +70,11 @@ dayjs.extend(relativeTime)
 dayjs.locale('zh-cn')
 
 const props = defineProps<{
-  notification: Notification
+  notification: Message
 }>()
 
 const emit = defineEmits<{
-  (e: 'click', notification: Notification): void
+  (e: 'click', notification: Message): void
   (e: 'mark-read', id: number): void
   (e: 'delete', id: number): void
 }>()
@@ -98,7 +101,7 @@ const iconClass = computed(() => iconClassMap[props.notification.type] || '')
 
 // 格式化时间
 const formatTime = computed(() => {
-  return dayjs(props.notification.createTime).fromNow()
+  return dayjs(props.notification.createdAt).fromNow()
 })
 
 // 点击项目
@@ -110,10 +113,10 @@ const handleClick = () => {
 const handleCommand = (command: string) => {
   switch (command) {
     case 'markRead':
-      emit('mark-read', props.notification.id)
+      emit('mark-read', props.notification.notificationId)
       break
     case 'delete':
-      emit('delete', props.notification.id)
+      emit('delete', props.notification.notificationId)
       break
   }
 }

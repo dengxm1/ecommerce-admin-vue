@@ -701,6 +701,12 @@ onMounted(() => {
   console.log('用户页面初始化')
   fetchUserList();
   roleStore.fetchAllRoles();
+  const token = localStorage.getItem('access-token')
+  if (token) {
+  console.log(token.split('.')[1])  // 查看 payload 部分
+  const payload = JSON.parse(atob(token.split('.')[1]!))
+  console.log(payload)  // 看看 userId 在哪个字段
+  }
 })
 </script>
 

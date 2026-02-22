@@ -25,13 +25,6 @@ export function getAdminNotificationsApi(params: {
   })
 }
 
-// 获取未读通知
-export function getUnreadNotificationsApi(): Promise<BaseResponse<Notification[]>> {
-  return request<BaseResponse<Notification[]>>({
-    url: '/notification/unread',
-    method: 'get'
-  })
-}
 
 // 管理员批量删除
 export function batchDeleteNotificationsApi(ids: number[]): Promise<BaseResponse> {

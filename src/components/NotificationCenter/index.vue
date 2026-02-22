@@ -55,7 +55,7 @@
           
           <NotificationItem
             v-for="item in filteredNotifications"
-            :key="item.id"
+            :key="item.notificationId"
             :notification="item"
             @click="handleNotificationClick"
             @mark-read="handleMarkRead"
@@ -82,7 +82,7 @@ import { useRouter } from 'vue-router'
 import { Bell, User } from '@element-plus/icons-vue'
 import { useNotificationStore } from '@/stores/notification'
 import NotificationItem from './NotificationItem.vue'
-import type { Notification } from '@/types/notification'
+import type { Message } from '@/types/message'
 
 const router = useRouter()
 const notificationStore = useNotificationStore()
@@ -110,15 +110,10 @@ const filteredNotifications = computed(() => {
 })
 
 // 点击通知
-const handleNotificationClick = async (notification: Notification) => {
+const handleNotificationClick = async (notification: Message) => {
   // 标记已读
   if (notification.status === 0) {
-    await notificationStore.markAsRead(notification.id)
-  }
-  
-  // 根据通知类型跳转
-  if (notification.data?.path) {
-    router.push(notification.data.path)
+    await notificationStore.markAsRead(notification.notificationId)
   }
 }
 

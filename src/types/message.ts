@@ -1,11 +1,11 @@
 export interface Message {
-  id: number;
+  notificationId: number;
   type: 'SYSTEM' | 'PERSONAL' | 'TASK';
   title: string;
   content: string;
-  senderName?: string;      // 个人中心不需要 senderId，只需要名字
   status: 0 | 1;
-  createTime: string;
+  createdAt: string;
+  readTime?: string;
 }
 
 export interface MessagePageParams {

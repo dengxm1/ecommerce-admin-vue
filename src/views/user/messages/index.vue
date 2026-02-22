@@ -33,10 +33,10 @@
             <el-timeline v-if="messageList.length > 0">
                 <el-timeline-item
                 v-for="item in messageList"
-                :key="item.id"
+                :key="item.notificationId"
                 :type="getTimelineType(item.type)"
                 :color="item.status === 0 ? '#409EFF' : '#C0C4CC'"
-                :timestamp="formatTime(item.createTime)"
+                :timestamp="formatTime(item.createdAt)"
                 placement="top"
                 >
                 <div 
@@ -109,16 +109,21 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { CircleCheck, Delete } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
-import {getUserMessageListApi, markAsReadApi,markAllAsReadApi, deleteNotificationApi} from '@/api/message'
 import type { Message } from '@/types/message'
 import MessageDetailDrawer from './components/MessageDetailDrawer.vue'
+import { useNotificationStore } from '@/stores/notification'
+
+const notificationStore = useNotificationStore()
 
 // 过滤类型
 const filterType = ref('all')
 
 
 // 消息列表
-const messageList = ref<Message[]>([])
+const messageList = computed<Message[]>(() => {
+  pagination.total = notificationStore.userMessage?.total || 0
+  return notificationStore.userMessage?.list || []
+})
 const loading = ref(false)
 
 // 分页
@@ -136,8 +141,10 @@ const detailDrawer = reactive({
 
 // 未读数量
 const unreadCount = computed(() => 
-  messageList.value.filter(m => m.status === 0).length
+  messageList.value.filter(m => m?.status === 0).length
 )
+
+
 
 // 类型映射
 const typeMap = {
@@ -166,9 +173,7 @@ const fetchMessages = async () => {
             filterType.value === 'unread' ? undefined : filterType.value ) as string,
       status: (filterType.value === 'unread' ? 0 : undefined) as 0 | 1 
     }
-    const res = await getUserMessageListApi(params)
-    messageList.value = ( res.data)?.list || []
-    pagination.total = (res.data)?.total || 0
+    notificationStore.getUserMessageList(params)
   } catch (error) {
     console.error('获取消息失败', error)
   } finally {
@@ -205,7 +210,7 @@ const handleMarkRead = async (message: any) => {
   if (message.status === 1) return
   
   try {
-    await markAsReadApi(message.id)
+    await notificationStore.markAsRead(message.notificationId)
     message.status = 1
     ElMessage.success('已标记为已读')
   } catch (error) {
@@ -216,9 +221,7 @@ const handleMarkRead = async (message: any) => {
 // 全部已读
 const handleMarkAllRead = async () => {
   try {
-    await markAllAsReadApi()
-    messageList.value.forEach(m => m.status = 1)
-    ElMessage.success('全部已读')
+    await notificationStore.markAllAsRead()
   } catch (error) {
     console.error('操作失败', error)
   }
@@ -228,13 +231,7 @@ const handleMarkAllRead = async () => {
 const handleDelete = async (message: any) => {
   try {
     await ElMessageBox.confirm('确定要删除这条消息吗？', '提示', { type: 'warning' })
-    await deleteNotificationApi(message.id)
-    const index = messageList.value.findIndex(m => m.id === message.id)
-    if (index !== -1) {
-      messageList.value.splice(index, 1)
-      pagination.total--
-    }
-    ElMessage.success('删除成功')
+    await notificationStore.deleteNotification(message.notificationId)
   } catch (error) {
     // 用户取消
   }
