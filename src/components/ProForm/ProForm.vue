@@ -48,6 +48,7 @@
                             v-if="item.type == 'upload'"
                             v-model="modelForm[item.prop]"
                             :limit="item.limit"
+                            :disabled="item.disabled"
                         />
                         <el-switch v-if="item.type == 'switch'" v-model="modelForm[item.prop]" :disabled="item.disabled"/>
                         <el-date-picker

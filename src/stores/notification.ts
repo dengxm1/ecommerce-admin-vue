@@ -8,7 +8,7 @@ import {
   deleteNotificationApi,
   getUserMessageListApi
 } from '@/api/message'
-import {  getOnlineCountApi} from '@/api/notification'
+import {getOnlineCountApi} from '@/api/notification'
 import type { Message } from '@/types/message'
 import type { PageResponse } from '@/types/apiType'
 
@@ -45,7 +45,6 @@ export const useNotificationStore = defineStore('notification', () => {
    * 初始化 WebSocket
    */
   const initWebSocket = () => {
-
     if (isWebSocketInitialized.value) {
       console.log('[NotificationStore] WebSocket 已经初始化，跳过')
       return
@@ -53,6 +52,17 @@ export const useNotificationStore = defineStore('notification', () => {
     
     console.log('[NotificationStore] 初始化 WebSocket')
     isWebSocketInitialized.value = true
+
+      // 先移除所有旧监听（避免重复）
+  websocketService.off('online-count', handleOnlineCount)
+  websocketService.off('connect', handleConnect)
+  websocketService.off('disconnect', handleDisconnect)
+  websocketService.off('error', handleError)
+  websocketService.off('notification', handleNewNotification)
+  websocketService.off('broadcast', handleBroadcast)
+  websocketService.off('unread-count', handleUnreadCount)
+  websocketService.off('admin-delete', handleAdminDelete)
+
     // 监听连接事件
     websocketService.on('connect', handleConnect)
     websocketService.on('disconnect', handleDisconnect)
@@ -84,7 +94,19 @@ export const useNotificationStore = defineStore('notification', () => {
   const handleConnect = () => {
     connected.value = true
     fetchUnreadNotifications()
-    fetchOnlineCount()
+  fetchOnlineCount()
+  }
+
+    /**
+   * 获取在线人数
+   */
+  const fetchOnlineCount = async () => {  
+    try {
+      const res = await getOnlineCountApi()
+      onlineCount.value = res.data || 0
+    } catch (error) {
+      console.error('获取在线人数失败', error)
+    }
   }
 
   /**
@@ -166,17 +188,6 @@ export const useNotificationStore = defineStore('notification', () => {
     }
   }
 
-  /**
-   * 获取在线人数
-   */
-  const fetchOnlineCount = async () => {
-    try {
-      const res = await getOnlineCountApi()
-      onlineCount.value = res.data || 0
-    }catch (error) {
-      console.error('获取在线人数失败', error)
-    }
-  }
 
   /**
    * 获取未读数量
@@ -297,6 +308,7 @@ export const useNotificationStore = defineStore('notification', () => {
     websocketService.off('broadcast', handleBroadcast)
     websocketService.off('online-count', handleOnlineCount)
     websocketService.off('unread-count', handleUnreadCount)
+     websocketService.off('admin-delete', handleAdminDelete)
   }
 
   return {

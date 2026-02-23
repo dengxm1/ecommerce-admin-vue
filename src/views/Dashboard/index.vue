@@ -1,9 +1,9 @@
 <template>
   <div class="dashboard">
-    <!-- 1. 欢迎标题区域 - 调整间距和视觉层次 -->
+    <!-- 1. 欢迎标题区域 -->
     <div class="welcome-section">
       <div class="welcome-content">
-        <h1>欢迎回来，{{ user.nickname || user.username}}！</h1>
+        <h1>欢迎回来，{{ user.nickname || user.username }}！</h1>
         <p>当前系统：电商后台管理系统（权限管理核心版）</p>
       </div>
       <div class="welcome-decoration">
@@ -13,7 +13,7 @@
       </div>
     </div>
     
-    <!-- 2. 核心数据卡片 - 重新设计卡片布局 -->
+    <!-- 2. 核心数据卡片 -->
     <div class="stats-cards">
       <el-card class="stats-card main-stats">
         <template #header>
@@ -82,7 +82,7 @@
       </el-card>
     </div>
     
-    <!-- 3. RBAC模型展示 - 重新设计模型展示 -->
+    <!-- 3. RBAC权限模型架构（带功能列表） -->
     <el-card class="rbac-card">
       <template #header>
         <div class="card-header">
@@ -91,8 +91,9 @@
       </template>
       
       <div class="model-container">
-        <!-- 模型图示 -->
+        <!-- 模型图示（三层结构） -->
         <div class="model-visualization">
+          <!-- 用户层 -->
           <div class="model-layer">
             <div class="layer-header">
               <span class="layer-title">用户层</span>
@@ -101,11 +102,23 @@
             <div class="layer-content">
               <div class="layer-icon">👥</div>
               <div class="layer-desc">系统用户</div>
+              <ul class="layer-features">
+                <li>新增用户</li>
+                <li>编辑用户</li>
+                <li>批量删除</li>
+                <li>导出数据</li>
+                <li>分配角色</li>
+                <li>查看权限</li>
+                <li>启用/禁用</li>
+                <li>重置密码</li>
+                <li>图片上传</li>
+              </ul>
             </div>
           </div>
           
           <div class="model-arrow">↓</div>
           
+          <!-- 角色层 -->
           <div class="model-layer">
             <div class="layer-header">
               <span class="layer-title">角色层</span>
@@ -114,11 +127,19 @@
             <div class="layer-content">
               <div class="layer-icon">🎭</div>
               <div class="layer-desc">权限集合</div>
+              <ul class="layer-features">
+                <li>新建角色</li>
+                <li>编辑角色</li>
+                <li>分配权限</li>
+                <li>查看用户</li>
+                <li>删除角色</li>
+              </ul>
             </div>
           </div>
           
           <div class="model-arrow">↓</div>
           
+          <!-- 权限层 -->
           <div class="model-layer">
             <div class="layer-header">
               <span class="layer-title">权限层</span>
@@ -127,11 +148,16 @@
             <div class="layer-content">
               <div class="layer-icon">🔐</div>
               <div class="layer-desc">菜单/按钮</div>
+              <ul class="layer-features">
+                <li>查看权限树</li>
+                <li>统计信息</li>
+                <li>权限详情</li>
+              </ul>
             </div>
           </div>
         </div>
         
-        <!-- 流程说明 -->
+        <!-- 权限生效流程说明 -->
         <div class="process-section">
           <h4>权限生效流程</h4>
           <el-steps :active="5" finish-status="success" simple class="process-steps">
@@ -168,7 +194,7 @@
       </div>
     </el-card>
     
-    <!-- 4. 技术栈展示 - 重新设计 -->
+    <!-- 4. 技术栈卡片 -->
     <el-card class="tech-card">
       <template #header>
         <div class="card-header">
@@ -188,6 +214,39 @@
         </div>
       </div>
     </el-card>
+    
+    <!-- 5. 系统功能卡片（个人中心、消息中心、系统公告） -->
+  <el-card class="system-card">
+    <template #header>
+      <div class="card-header">
+        <h3>账户与通知</h3>
+        <el-tag size="small" type="warning">个人中心 · 消息 · 公告</el-tag>
+      </div>
+    </template>
+    <div class="system-grid">
+      <div class="system-item">
+        <div class="system-icon">👤</div>
+        <div class="system-info">
+          <div class="system-name">个人中心</div>
+          <div class="system-desc">编辑资料、修改头像、修改密码、绑定手机</div>
+        </div>
+      </div>
+      <div class="system-item">
+        <div class="system-icon">💬</div>
+        <div class="system-info">
+          <div class="system-name">消息中心</div>
+          <div class="system-desc">在线人数、查看通知、标记已读、删除消息</div>
+        </div>
+      </div>
+      <div class="system-item">
+        <div class="system-icon">📢</div>
+        <div class="system-info">
+          <div class="system-name">系统公告</div>
+          <div class="system-desc">管理员发送公告、查看历史公告</div>
+        </div>
+      </div>
+    </div>
+  </el-card>
   </div>
 </template>
 
@@ -597,6 +656,72 @@ onMounted(async () => {
   }
 }
 
+/* 系统功能卡片样式 */
+.system-card {
+  .system-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    
+    .system-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      
+      .system-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 10px;
+        font-size: 20px;
+      }
+      
+      .system-info {
+        .system-name {
+          font-size: 16px;
+          font-weight: 600;
+          color: #2c3e50;
+          margin-bottom: 4px;
+        }
+        .system-desc {
+          font-size: 12px;
+          color: #7f8c8d;
+        }
+      }
+    }
+  }
+}
+
+/* 功能列表样式 */
+.layer-features {
+  margin-top: 12px;
+  padding-left: 0;
+  list-style: none;
+  text-align: left;
+  font-size: 12px;
+  color: #5a6a7a;
+  li {
+    padding: 4px 0;
+    border-bottom: 1px dashed #e0e4e8;
+    &:last-child {
+      border-bottom: none;
+    }
+    &::before {
+      content: "•";
+      color: #667eea;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+  }
+}
+
 /* 响应式调整 */
 @media screen and (max-width: 1024px) {
   .stats-cards {
@@ -637,6 +762,10 @@ onMounted(async () => {
   }
   
   .status-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .system-grid {
     grid-template-columns: 1fr !important;
   }
 }

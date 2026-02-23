@@ -56,7 +56,7 @@
         name: "",
         code: "",
         description:"",
-        status: 1
+        // status: 1
     })
     const formItemList = reactive<formItem[]>([
         {
@@ -80,21 +80,6 @@
             placeholder: "请输入角色描述，最长100个字符",
             clearable:true,
             maxlength: 100
-        },
-        {
-            label: "状态",
-            prop: "status",
-            type: "radio",
-            options: [
-                {
-                    value: 1,
-                    label:'启用'
-                },
-                {
-                    value: 0,
-                    label:'禁用'
-                }
-            ]
         }
     ])
 
@@ -125,7 +110,7 @@
             modelForm.name = data.name;
             modelForm.code = data.code;
             modelForm.description = data.description;
-            modelForm.status = data.status;
+            // modelForm.status = data.status;
     }
 
     
@@ -135,7 +120,7 @@
         modelForm.name = "";
         modelForm.code = ""
         modelForm.description = ""
-        modelForm.status = 1
+        // modelForm.status = 1
         dialogFormRef.value?.clearValidate?.();
     }
 

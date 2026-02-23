@@ -19,16 +19,13 @@
         <div class="header-right">
             <!-- 消息通知 -->
             <NotificationCenter />
-            
-            <!-- 全屏切换 -->
-            <div class="tool-item" @click="toggleFullscreen">
-                <el-icon :size="20"><FullScreen /></el-icon>
-            </div>
-            
-            <!-- 主题切换 -->
-            <div class="tool-item" @click="toggleTheme">
-                <el-icon :size="20"><Moon /></el-icon>
-            </div>
+            <!-- github项目地址 -->
+            <div class="github-content">
+                <el-avatar :size="32" :src="githubIcon" />
+                <div class="code-address" @click="codeAddressClick">
+                    项目地址
+                </div>
+             </div>
             
             <!-- 用户信息 -->
             <el-dropdown trigger="click" class="user-dropdown">
@@ -72,6 +69,7 @@ import {
 } from '@element-plus/icons-vue';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import NotificationCenter from '@/components/NotificationCenter/index.vue'
+import githubIcon from '@/assets/github.png'
 
 const route = useRoute();
 const router = useRouter();
@@ -153,6 +151,11 @@ const toggleFullscreen = () => {
 const toggleTheme = () => {
     console.log('切换主题');
 };
+
+// 跳转到github项目地址
+const codeAddressClick = () => {
+    window.open('https://github.com/dengxm1/ecommerce-admin-vue', '_blank');
+}
 </script>
 
 <style scoped lang="scss">
@@ -298,7 +301,6 @@ const toggleTheme = () => {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 4px 8px;
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -336,6 +338,29 @@ const toggleTheme = () => {
                 margin-right: 8px;
                 vertical-align: middle;
             }
+        }
+    }
+    .github-content{
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 8px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+        
+        &:hover {
+            .code-address {
+                color: var(--ecommerce-primary);
+            }
+        }
+        
+        .code-address {
+            font-weight: 500;
+            font-size: 12px;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
         }
     }
 }

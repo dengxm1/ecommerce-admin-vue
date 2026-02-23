@@ -1,5 +1,5 @@
 <template>
-  <div class="image-upload-wrapper">
+  <div class="image-upload-wrapper" v-if="!props.disabled">
     <div class="image-preview-list">
       <div
         v-for="(url, index) in previewImages"
@@ -73,6 +73,36 @@
       </div>
   </el-dialog>
   </div>
+  <div class="image-upload-wrapper" v-else>
+      <div class="image-preview-list" v-if="previewImages.length > 0">
+        <div
+          v-for="(url, index) in previewImages"
+          :key="index"
+          class="image-preview-item"
+          :style="{ width: previewSize.width, height: previewSize.height }"
+        >
+            <img
+              :src="url"
+              :alt="`图片-${index + 1}`"
+              class="image-preview"
+              @click="handlePreview(url)"
+            />
+            <div class="image-actions">
+              <el-icon class="action-icon" @click="handlePreview(url)">
+                <ZoomIn />
+              </el-icon>
+            </div>
+        </div>
+    </div>
+    <div v-else class="upload-tips">
+      <div>暂无图片</div>
+    </div>
+    <el-dialog v-model="dialogVisible">
+      <div class="image-preview-container">
+          <img :src="dialogImageUrl" alt="Preview Image"  class="preview-image"/>
+      </div>
+  </el-dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -116,6 +146,7 @@ interface Props {
   acceptFormats?: string[]
   /** 宽高比限制（如 '1:1', '4:3', '16:9'） */
   aspectRatio?: string
+  disabled?: boolean
 }
 
 // 定义组件事件

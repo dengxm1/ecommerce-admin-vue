@@ -9,6 +9,7 @@ class WebSocketService {
   private reconnectAttempts = 0
   private maxReconnectAttempts = 5
   private messageHandlers: Map<string, Set<(data: any) => void>> = new Map()
+  private userId: string | null = null
   
   connect() {
 
@@ -34,7 +35,7 @@ class WebSocketService {
       return
     }
 
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://dengxinyi.cn'
    const sockJsUrl = `${baseUrl}${import.meta.env.VITE_APP_BASE_API}/ws`
    
     this.connecting = true
@@ -74,8 +75,8 @@ class WebSocketService {
           console.warn('[WebSocket] 无法获取用户ID，个人通知将不可用')
         }
 
-         // 上报用户上线
-    this.reportUserOnline()
+      // 上报用户上线
+      this.reportUserOnline()
       // 订阅广播
       this.client?.subscribe('/topic/broadcast', (message) => {
         this.handleBroadcast(message)
@@ -99,6 +100,7 @@ class WebSocketService {
       console.error('[WebSocket] STOMP错误', frame)
       this.connected = false
       this.connecting = false
+      this.userId = null
       this.emit('error', frame)
       this.reconnect()
     }
@@ -108,6 +110,7 @@ class WebSocketService {
       console.log('[WebSocket] 断开连接')
       this.connected = false
       this.connecting = false
+      this.userId = null
       this.emit('disconnect', null)
     }
     
@@ -115,9 +118,10 @@ class WebSocketService {
     this.client.activate()
   }
 
-  // 添加一个方法：上报用户上线
+// 上报用户上线
 private reportUserOnline() {
   const userId = this.getUserIdFromToken()
+  this.userId = userId;
   if (userId) {
     // 通过发送一个特殊的消息来上报用户ID
     this.client?.publish({
@@ -127,6 +131,17 @@ private reportUserOnline() {
     console.log('[WebSocket] 已上报用户上线:', userId)
   }
 }
+
+  // 上报用户下线
+  private  reportUserOffline() {
+    if (this.userId && this.client && this.connected) {
+      this.client.publish({
+        destination: '/app/user.offline',
+        body: JSON.stringify({ userId: this.userId })
+      })
+      console.log('[WebSocket] 已上报用户下线:', this.userId)
+    }
+  }
 
   // 处理个人通知
   private handleNotification(message: Message) {
@@ -209,8 +224,9 @@ private reportUserOnline() {
   }
   
   // 断开连接
-  disconnect() {
-    console.log('[WebSocket] 断开连接')
+  async disconnect() {
+    console.log('[WebSocket] 断开连接22')
+   this.reportUserOffline(); //上报用户下线
     this.client?.deactivate()
     this.connected = false
     this.emit('disconnect', null)
@@ -279,4 +295,5 @@ private getUserIdFromToken(): string | null {
 }
 
 // 单例导出
-export default new WebSocketService()
+const instance = new WebSocketService()
+export default instance

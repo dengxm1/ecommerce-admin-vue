@@ -36,7 +36,6 @@ declare module 'vue' {
     ElHeader: typeof import('element-plus/es')['ElHeader']
     ElIcon: typeof import('element-plus/es')['ElIcon']
     ElInput: typeof import('element-plus/es')['ElInput']
-    ElLink: typeof import('element-plus/es')['ElLink']
     ElMain: typeof import('element-plus/es')['ElMain']
     ElMenu: typeof import('element-plus/es')['ElMenu']
     ElMenuItem: typeof import('element-plus/es')['ElMenuItem']
@@ -65,7 +64,6 @@ declare module 'vue' {
     ElTree: typeof import('element-plus/es')['ElTree']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     Header: typeof import('./src/components/Layout/header.vue')['default']
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     Layout: typeof import('./src/components/Layout/index.vue')['default']
     NotificationCenter: typeof import('./src/components/NotificationCenter/index.vue')['default']
     NotificationItem: typeof import('./src/components/NotificationCenter/NotificationItem.vue')['default']
@@ -79,7 +77,6 @@ declare module 'vue' {
     Sidebar: typeof import('./src/components/Layout/sidebar.vue')['default']
     SliderCaptcha: typeof import('./src/components/SliderCaptcha/SliderCaptcha.vue')['default']
     Tabs: typeof import('./src/components/Layout/tabs.vue')['default']
-    WelcomeItem: typeof import('./src/components/WelcomeItem.vue')['default']
   }
   export interface GlobalDirectives {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']
