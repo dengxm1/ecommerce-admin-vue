@@ -492,10 +492,6 @@ const clearResetTimer = () => {
   }
 }
 
-// 初始化时获取验证码
-onMounted(() => {
-  fetchCaptcha()
-})
 </script>
 
 <style scoped lang="scss">
