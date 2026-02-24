@@ -11,6 +11,7 @@ const staticRouteDefinitions: RouteRecordRaw[] = [
           meta: {
           title: '概览',
           hidden: false,
+          icon: 'Odometer'
         }
   },
   {
@@ -62,17 +63,16 @@ const router = createRouter({
         noAuth: true,
       }
     },
-    {
-        path: '/404',
+      {
+        path: '/:pathMatch(.*)*',
         name: 'NotFound',
-        component: () => import("@/views/404/index.vue"),
+        component: () => import("@/views/404/index.vue"),  // 直接渲染404组件
         meta: {
-          title: '404',
           hidden: true,
-          noTab: true,       // 不添加标签页
+          noTab: true,
           noAuth: true
         }
-      },
+    }
   ],
 })
 setupPermissionGuard(router)
