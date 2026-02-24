@@ -67,9 +67,9 @@ const userStore = useUserStore();
 const route = useRoute();
 const activeMenu = computed(() => route.path);
 const userAvatar = computed(() =>{
-    return userStore.userInfo.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+    return userStore.userInfo?.avatar??'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
 })
-const userInfo = computed(() => userStore.userInfo)
+const userInfo = computed(() => userStore.userInfo || {})
 const permissionStore = usePermissionStore(); 
 const sidebarList = computed(() => permissionStore.sidebarRoutes)
 const handleSelect = (key: string, keyPath: string[]) => {

@@ -303,6 +303,9 @@ const searchFormList = computed(() => [
     },
     clear: () => {
       fetchUserList()
+    },
+     inputParse: (value: string) => {
+        return value.replace(/\s+/g, '')
     }
   },
   {

@@ -238,6 +238,9 @@ const searchFormList = ref([
     },
     clear: () => {
       fetchRoleList()
+    },
+    inputParse: (value: string) => {
+        return value.replace(/\s+/g, '')
     }
   }
 ])

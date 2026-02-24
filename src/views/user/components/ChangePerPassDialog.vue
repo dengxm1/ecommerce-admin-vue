@@ -42,12 +42,18 @@
         {
             label: "原密码",
             prop: "oldPassword",
-            type: "password"
+            type: "password",
+            inputParse: (value: string) => {
+                return value.replace(/[^A-Za-z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g, '');
+            }
         },
         {
             label: "新密码",
             prop: "password",
-            type: "password"
+            type: "password",
+            inputParse: (value: string) => {
+                return value.replace(/[^A-Za-z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/g, '');
+            }
         },
         {
             label: "确认密码",

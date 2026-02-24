@@ -256,7 +256,7 @@ import { ref, computed } from 'vue'
 
 const userStore = useUserStore()
 
-const user = computed(() => userStore.userInfo)
+const user = computed(() => userStore.userInfo || {})
 const stats = computed(() => {
   const statsData = userStore.dashboardStats
   return {

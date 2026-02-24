@@ -73,13 +73,12 @@ import githubIcon from '@/assets/github.png'
 
 const route = useRoute();
 const router = useRouter();
-const userAvatar = computed(() =>{
-    return userStore.userInfo.avatar || 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'
+const userAvatar = computed(() => {
+    return userInfo.value?.avatar?? 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png';
 })
-
 const userStore = useUserStore();
 
-const userInfo = computed(() => userStore.userInfo)
+const userInfo = computed(() => userStore.userInfo || {})
 
 const permissionStore = usePermissionStore()
 

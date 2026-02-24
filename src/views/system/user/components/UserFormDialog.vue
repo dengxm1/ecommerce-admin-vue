@@ -76,7 +76,10 @@
             label: "用户名",
             prop: "username",
             type: "input",
-            clearable:true
+            clearable:true,
+             inputParse: (value: string) => {
+                return value.replace(/\s+/g, '')
+             }
         },
         {
             label: "密码",
@@ -104,7 +107,10 @@
             label: "昵称",
             prop: "nickname",
             type: "input",
-            clearable:true   
+            clearable:true,
+            inputParse: (value: string) => {
+                return value.replace(/\s+/g, '')
+            }
         },
          {
             label: "邮箱",

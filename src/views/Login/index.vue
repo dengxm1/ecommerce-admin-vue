@@ -60,6 +60,7 @@
                     placeholder="请输入用户名"
                     :prefix-icon="User"
                     @keyup.enter="handleAccountLogin"
+                     @input="handleUserNameInput"
                   />
                 </el-form-item>
                 <el-form-item prop="password">
@@ -70,6 +71,7 @@
                     :prefix-icon="Lock"
                     show-password
                     @keyup.enter="handleAccountLogin"
+                    @input="handlePasswordInput"
                   />
                 </el-form-item>
 
@@ -326,8 +328,8 @@ const handleAccountLogin = async () => {
   
   try {
     await userStore.login({
-      username: accountForm.username,
-      password: accountForm.password
+      username: accountForm.username.trim(),
+      password: accountForm.password.trim()
     })
     const notificationStore = useNotificationStore()
     notificationStore.initWebSocket()
@@ -397,6 +399,17 @@ const handlePhoneLogin = async () => {
   } finally {
     phoneLoading.value = false
   }
+}
+
+    // 去除用户名中的空格
+const handleUserNameInput = (value: string) => {
+    accountForm.username = value.replace(/\s+/g, '')
+}
+
+// 去除密码空格
+const handlePasswordInput = (value: string) => {
+    // 去除所有空格（包括中间的空格）
+    accountForm.password = value.replace(/\s+/g, '')
 }
 
 // 密码重置成功处理

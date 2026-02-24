@@ -190,6 +190,9 @@ const searchFormList = computed(() => [
     keyEnter: () => fetchData(),
     clear: () => {
       fetchData()
+    },
+    inputParse: (value: string) => {
+        return value.replace(/\s+/g, '')
     }
   },
   {

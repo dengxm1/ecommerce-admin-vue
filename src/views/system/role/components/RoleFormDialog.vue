@@ -64,14 +64,20 @@
             prop: "name",
             type: "input",
             clearable:true,
-            maxlength: 12
+            maxlength: 12,
+            inputParse: (value: string) => {
+                return value.replace(/\s+/g, '')
+            }
         },
         {
             label: "角色编码",
             prop: "code",
             type: "input",
             clearable:true,
-            maxlength: 20
+            maxlength: 20,
+            inputParse: (value: string) => {
+                return value.replace(/\s+/g, '')
+            }
         },
         {
             label: "描述",
