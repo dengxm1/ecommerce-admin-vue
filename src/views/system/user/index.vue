@@ -609,14 +609,17 @@ const handleExport = async () => {
   }
   try {
     exportLoading.value = true
-    ElMessage.success('导出任务已开始，请稍后查看下载列表')
     await exportUserDataApi(searchForm);
+      ElMessage.success({
+      message: '文件正在下载中，请稍后查看下载文件夹',
+      duration: 3000
+    })
   } catch (error) {
   } finally {
      // 延迟清除状态,避免频繁点击
     setTimeout(() => {
       exportLoading.value = false
-    }, 1000)
+    }, 2000)
   }
 }
 
