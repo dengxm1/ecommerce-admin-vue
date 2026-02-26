@@ -62,9 +62,11 @@ export const useNotificationStore = defineStore('notification', () => {
   websocketService.off('broadcast', handleBroadcast)
   websocketService.off('unread-count', handleUnreadCount)
   websocketService.off('admin-delete', handleAdminDelete)
+  websocketService.off('fetch-online-count', fetchOnlineCount)
 
     // 监听连接事件
     websocketService.on('connect', handleConnect)
+    websocketService.on('fetch-online-count', fetchOnlineCount)
     websocketService.on('disconnect', handleDisconnect)
     websocketService.on('error', handleError)
     websocketService.on('notification', handleNewNotification)
@@ -94,7 +96,6 @@ export const useNotificationStore = defineStore('notification', () => {
   const handleConnect = () => {
     connected.value = true
     fetchUnreadNotifications()
-  fetchOnlineCount()
   }
 
     /**
@@ -308,7 +309,8 @@ export const useNotificationStore = defineStore('notification', () => {
     websocketService.off('broadcast', handleBroadcast)
     websocketService.off('online-count', handleOnlineCount)
     websocketService.off('unread-count', handleUnreadCount)
-     websocketService.off('admin-delete', handleAdminDelete)
+    websocketService.off('admin-delete', handleAdminDelete)
+    websocketService.off('fetch-online-count', fetchOnlineCount)
   }
 
   return {

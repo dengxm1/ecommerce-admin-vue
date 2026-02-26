@@ -56,7 +56,7 @@ class WebSocketService {
     })
     
     // 连接成功回调
-    this.client.onConnect = (frame) => {
+    this.client.onConnect = async (frame) => {
       console.log('[WebSocket] 连接成功', frame)
       this.connected = true
       this.connecting = false
@@ -75,8 +75,6 @@ class WebSocketService {
           console.warn('[WebSocket] 无法获取用户ID，个人通知将不可用')
         }
 
-      // 上报用户上线
-      this.reportUserOnline()
       // 订阅广播
       this.client?.subscribe('/topic/broadcast', (message) => {
         this.handleBroadcast(message)
@@ -91,8 +89,10 @@ class WebSocketService {
       this.client?.subscribe('/topic/admin-delete', (message) => {
           this.handleAdminDelete(message)
       })
-      
       this.emit('connect', null)
+      // 上报用户上线
+      await this.reportUserOnline()
+      this.emit('fetch-online-count', null)  //避免刷新页面的时候在线人数store被重置为0，主动触发一次获取在线人数的事件
     }
     
     // 连接错误回调
@@ -119,17 +119,26 @@ class WebSocketService {
   }
 
 // 上报用户上线
-private reportUserOnline() {
-  const userId = this.getUserIdFromToken()
-  this.userId = userId;
-  if (userId) {
-    // 通过发送一个特殊的消息来上报用户ID
-    this.client?.publish({
-      destination: '/app/user.online',
-      body: JSON.stringify({ userId: userId })
-    })
-    console.log('[WebSocket] 已上报用户上线:', userId)
-  }
+private reportUserOnline():  Promise<void>  {
+  return new Promise((resolve) => {
+    const userId = this.getUserIdFromToken()
+    this.userId = userId;
+    
+    if (userId) {
+      // 发送上报消息
+      this.client?.publish({
+        destination: '/app/user.online',
+        body: JSON.stringify({ userId: userId })
+       })
+      
+      console.log('[WebSocket] 已上报用户上线:', userId)
+      
+      // 假设服务器会在1秒内处理完
+      setTimeout(resolve, 500)
+    } else {
+      resolve()
+    }
+  })
 }
 
   // 上报用户下线

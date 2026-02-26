@@ -94,7 +94,21 @@
             { required: true,  message: '请输入角色名称' }
         ],
         code:[
-            {  required: true, message: '请输入角色编码'}
+            {  required: true, message: '请输入角色编码'},
+            { 
+                pattern: /^[a-zA-Z][a-zA-Z_]*$/, 
+                message: '角色编码必须以字母开头，只能包含字母和下划线' 
+            },
+            {
+             validator: (rule: any, value: string, callback: any) => {
+                if (value && /__/.test(value)) {
+                    callback(new Error('角色编码不能包含连续两个下划线'));
+                } else {
+                    callback();
+                }
+            },
+            trigger: 'blur'
+        }
         ]
     })
 
